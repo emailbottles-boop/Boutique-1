@@ -13,8 +13,8 @@ const PRODUCTS = [
     name: "Floral Wrap Dress",
     category: "dresses",
     price: "$68",
-    tag: "New",
-    image: null,
+    tag: "Example",
+    image: "images/example-dresses.jpg",
   },
   {
     id: "p2",
@@ -42,11 +42,11 @@ const PRODUCTS = [
   },
   {
     id: "p5",
-    name: "High-Waist Trousers",
+    name: "Red Skinny Jeans",
     category: "dresses",
     price: "$54",
-    tag: null,
-    image: null,
+    tag: "Example",
+    image: "images/example-jeans.jpg",
   },
   {
     id: "p6",
