@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact / Order | Bridget's Boutique</title>
+<meta name="description" content="Get in touch with Bridget's Boutique in Enumclaw, WA — inquire about an item, ask a question, or plan your visit." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="nav__brand">
+      <img src="images/logo.svg" alt="" />
+      Bridget's Boutique
+    </a>
+    <ul class="nav__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">New Arrivals</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact / Order</a></li>
+    </ul>
+    <div class="nav__cta">
+      <a class="nav__phone" href="tel:+13606258032">(360) 625-8032</a>
+      <a class="btn btn--primary btn--small" href="contact.html">Inquire to Order</a>
+      <button class="nav__toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <span class="breadcrumb">Home / Contact &amp; Order</span>
+      <h1>Contact &amp; Order Inquiries</h1>
+      <p>Have a question, want to reserve a piece, or ordering something you saw online or in store? Reach out below — or message us directly on Instagram or Facebook for the fastest response.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+
+      <div>
+        <h2>Send an Inquiry</h2>
+        <p>Fill this out and we'll follow up with availability, pricing, and pickup or shipping options.</p>
+
+        <!--
+          Formspree placeholder: replace YOUR_FORM_ID below with a real
+          endpoint from https://formspree.io once the form is created,
+          then remove the placeholder handling in js/script.js will
+          automatically let the form submit normally.
+        -->
+        <form id="order-form" class="form-grid" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+          <div class="form-row form-row--2">
+            <div>
+              <label for="name">Full Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+            <div>
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+          </div>
+
+          <div class="form-row form-row--2">
+            <div>
+              <label for="phone">Phone (optional)</label>
+              <input type="tel" id="phone" name="phone" />
+            </div>
+            <div>
+              <label for="inquiry_type">Inquiry Type</label>
+              <select id="inquiry_type" name="inquiry_type">
+                <option value="order">Order an Item</option>
+                <option value="question">General Question</option>
+                <option value="availability">Check Availability</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="item">Item / Description</label>
+            <input type="text" id="item" name="item" placeholder="e.g. Floral Wrap Dress, size M" />
+          </div>
+
+          <div>
+            <label for="message">Message</label>
+            <textarea id="message" name="message" required placeholder="Tell us what you're looking for..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--block">Send Inquiry</button>
+          <p class="form-status"></p>
+          <p class="form-note">We typically reply within 1 business day. For faster service, call or message us on Instagram/Facebook.</p>
+        </form>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div class="info-card">
+          <h3>📞 Call or Text</h3>
+          <p>The fastest way to reach us during store hours.</p>
+          <a class="btn btn--outline btn--small" href="tel:+13606258032">(360) 625-8032</a>
+        </div>
+        <div class="info-card">
+          <h3>💬 Message Us</h3>
+          <p>Send us a DM on Instagram or Facebook — it's how most of our regulars order.</p>
+          <div class="btn-row">
+            <a class="btn btn--outline btn--small" href="https://www.instagram.com/bridgetsboutiqueenumclaw/" target="_blank" rel="noopener">Instagram DM</a>
+            <a class="btn btn--outline btn--small" href="https://www.facebook.com/BridgetsBoutiqueEnumclaw/" target="_blank" rel="noopener">Facebook Message</a>
+          </div>
+        </div>
+        <div class="info-card">
+          <h3>📍 Visit In Store</h3>
+          <p>1617 Cole St<br />Enumclaw, WA 98022</p>
+          <table class="hours-table">
+            <tr><td>Mon – Thu</td><td>10am – 5pm</td></tr>
+            <tr><td>Fri – Sat</td><td>10am – 7pm</td></tr>
+            <tr><td>Sunday</td><td>11am – 5pm</td></tr>
+          </table>
+          <a class="btn btn--outline btn--small" style="margin-top:0.75rem;" href="https://maps.google.com/?q=1617+Cole+St+Enumclaw+WA+98022" target="_blank" rel="noopener">Get Directions</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">Bridget's Boutique</div>
+        <p>Women's clothing boutique in downtown Enumclaw, WA. New arrivals every week.</p>
+        <div class="social-icons">
+          <a href="https://www.facebook.com/BridgetsBoutiqueEnumclaw/" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/bridgetsboutiqueenumclaw/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 3.3.15 4.8 1.7 4.95 4.95.06 1.3.07 1.6.07 4.8s-.01 3.5-.07 4.8c-.15 3.25-1.65 4.8-4.95 4.95-1.3.06-1.6.07-4.9.07s-3.6 0-4.9-.07c-3.3-.15-4.8-1.7-4.95-4.95C2.09 15.5 2.08 15.2 2.08 12s.01-3.5.07-4.8C2.3 3.95 3.8 2.4 7.1 2.27 8.4 2.21 8.8 2.2 12 2.2Zm0 1.8c-3.15 0-3.52 0-4.76.07-2.35.1-3.44 1.2-3.54 3.54C3.63 8.85 3.63 9.2 3.63 12s0 3.15.07 4.4c.1 2.33 1.19 3.44 3.54 3.53 1.24.06 1.6.07 4.76.07s3.52 0 4.76-.07c2.35-.09 3.44-1.2 3.54-3.53.06-1.25.07-1.6.07-4.4s0-3.15-.07-4.39c-.1-2.34-1.2-3.44-3.54-3.54C15.52 4 15.15 4 12 4Zm0 3.4a4.6 4.6 0 1 1 0 9.2 4.6 4.6 0 0 1 0-9.2Zm0 1.8a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Zm4.8-2.1a1.07 1.07 0 1 1 0 2.14 1.07 1.07 0 0 1 0-2.14Z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="shop.html">New Arrivals</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact / Order</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Visit</h4>
+        <ul>
+          <li>1617 Cole St, Enumclaw, WA 98022</li>
+          <li><a href="tel:+13606258032">(360) 625-8032</a></li>
+          <li>Mon–Thu 10–5 · Fri–Sat 10–7 · Sun 11–5</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> Bridget's Boutique. All rights reserved.</span>
+      <span>Enumclaw, Washington</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
