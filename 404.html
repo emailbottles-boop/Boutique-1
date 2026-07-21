@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Page Not Found | Bridget's Boutique</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="nav__brand">
+      <img src="images/logo.svg" alt="" />
+      Bridget's Boutique
+    </a>
+    <ul class="nav__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">New Arrivals</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact / Order</a></li>
+    </ul>
+    <div class="nav__cta">
+      <a class="nav__phone" href="tel:+13606258032">(360) 625-8032</a>
+      <a class="btn btn--primary btn--small" href="contact.html">Inquire to Order</a>
+      <button class="nav__toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content">
+  <section class="page-hero" style="padding: 6rem 0;">
+    <div class="container">
+      <span class="breadcrumb">404</span>
+      <h1>We couldn't find that page.</h1>
+      <p>The page you're looking for may have moved. Try New Arrivals, or get in touch and we'll help you find what you need.</p>
+      <div class="btn-row" style="justify-content:center; margin-top:1.5rem;">
+        <a class="btn btn--primary" href="index.html">Back to Home</a>
+        <a class="btn btn--outline" href="shop.html">Shop New Arrivals</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> Bridget's Boutique. All rights reserved.</span>
+      <span>Enumclaw, Washington</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
