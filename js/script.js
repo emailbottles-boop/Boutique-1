@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initActiveLink();
   initContactForm();
   initShopFilters();
+  initHeaderScroll();
+  initReveal();
 });
 
 function initNav() {
@@ -60,6 +62,38 @@ function initContactForm() {
     status.classList.remove("form-status--success");
     status.classList.add("form-status--error", "is-visible");
   });
+}
+
+function initHeaderScroll() {
+  const header = document.querySelector(".site-header");
+  if (!header) return;
+  const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+}
+
+function initReveal() {
+  const targets = document.querySelectorAll(".reveal");
+  if (!targets.length) return;
+
+  if (!("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("is-visible"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+  );
+
+  targets.forEach((el) => observer.observe(el));
 }
 
 function initShopFilters() {
