@@ -113,30 +113,64 @@ async function loadProducts() {
 
 function renderProductRow(id, product) {
   const card = document.createElement("div");
-  card.className = "admin-card admin-product-row";
+  card.className = "admin-card admin-product-card";
 
-  const thumb = document.createElement("div");
-  thumb.className = "admin-product-thumb";
+  // Tappable photo thumbnail — tap it to pick a new photo, same as tapping
+  // an avatar in most phone apps. A small pencil badge hints it's tappable.
+  const thumbLabel = document.createElement("label");
+  thumbLabel.className = "admin-product-thumb";
+  thumbLabel.title = "Tap to change photo";
+  const thumbImg = document.createElement("img");
+  const thumbPlaceholder = document.createElement("span");
+  thumbPlaceholder.textContent = "Add Photo";
   if (product.photoUrl) {
-    const img = document.createElement("img");
-    img.src = product.photoUrl;
-    img.alt = product.name;
-    thumb.appendChild(img);
+    thumbImg.src = product.photoUrl;
+    thumbImg.alt = product.name;
+    thumbLabel.appendChild(thumbImg);
   } else {
-    thumb.innerHTML = `<span>No Photo</span>`;
+    thumbLabel.appendChild(thumbPlaceholder);
   }
+  const badge = document.createElement("span");
+  badge.className = "admin-product-thumb__badge";
+  badge.textContent = "✎";
+  thumbLabel.appendChild(badge);
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  thumbLabel.appendChild(fileInput);
+
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    thumbLabel.innerHTML = "";
+    const preview = document.createElement("img");
+    preview.src = URL.createObjectURL(file);
+    thumbLabel.append(preview, badge, fileInput);
+  });
+
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "f-name";
+  nameInput.value = product.name || "";
+  nameInput.setAttribute("aria-label", "Product name");
+
+  const priceInput = document.createElement("input");
+  priceInput.type = "text";
+  priceInput.className = "f-price";
+  priceInput.value = product.price || "";
+  priceInput.setAttribute("aria-label", "Price");
+
+  const headText = document.createElement("div");
+  headText.className = "admin-product-head__text";
+  headText.append(nameInput, priceInput);
+
+  const head = document.createElement("div");
+  head.className = "admin-product-head";
+  head.append(thumbLabel, headText);
 
   const fields = document.createElement("div");
   fields.className = "admin-fields";
   fields.innerHTML = `
-    <div>
-      <label>Name</label>
-      <input type="text" class="f-name" value="${escapeAttr(product.name || "")}" />
-    </div>
-    <div>
-      <label>Price</label>
-      <input type="text" class="f-price" value="${escapeAttr(product.price || "")}" />
-    </div>
     <div>
       <label>Category</label>
       <select class="f-category">
@@ -147,8 +181,8 @@ function renderProductRow(id, product) {
       </select>
     </div>
     <div>
-      <label>Tag</label>
-      <input type="text" class="f-tag" value="${escapeAttr(product.tag || "")}" />
+      <label>Tag (optional)</label>
+      <input type="text" class="f-tag" placeholder="e.g. New" value="${escapeAttr(product.tag || "")}" />
     </div>
   `;
   fields.querySelector(".f-category").value = product.category || "dresses";
@@ -156,50 +190,40 @@ function renderProductRow(id, product) {
   const actions = document.createElement("div");
   actions.className = "admin-product-actions";
 
-  const uploadLabel = document.createElement("label");
-  uploadLabel.className = "admin-file-label";
-  uploadLabel.textContent = "Change Photo";
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
-  fileInput.accept = "image/*";
-  uploadLabel.appendChild(fileInput);
-
   const saveBtn = document.createElement("button");
-  saveBtn.className = "btn btn--outline btn--small";
-  saveBtn.textContent = "Save";
+  saveBtn.className = "btn btn--primary btn--small";
+  saveBtn.textContent = "Save Changes";
 
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "btn btn--outline btn--small";
   deleteBtn.textContent = "Delete";
 
-  actions.append(uploadLabel, saveBtn, deleteBtn);
-  card.append(thumb, fields, actions);
+  actions.append(saveBtn, deleteBtn);
+  card.append(head, fields, actions);
 
   saveBtn.addEventListener("click", async () => {
     saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
     try {
       let photoUrl = product.photoUrl || null;
       if (fileInput.files[0]) {
         photoUrl = await uploadProductPhoto(id, fileInput.files[0]);
-        const img = document.createElement("img");
-        img.src = photoUrl;
-        img.alt = fields.querySelector(".f-name").value;
-        thumb.innerHTML = "";
-        thumb.appendChild(img);
       }
       await updateDoc(doc(db, "products", id), {
-        name: fields.querySelector(".f-name").value,
-        price: fields.querySelector(".f-price").value,
+        name: nameInput.value,
+        price: priceInput.value,
         category: fields.querySelector(".f-category").value,
         tag: fields.querySelector(".f-tag").value || null,
         photoUrl,
       });
+      product.photoUrl = photoUrl;
       showToast("Saved.");
     } catch (err) {
       console.error(err);
       showToast("Couldn't save that change — try again.");
     } finally {
       saveBtn.disabled = false;
+      saveBtn.textContent = "Save Changes";
     }
   });
 
