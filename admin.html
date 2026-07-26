@@ -18,7 +18,7 @@
   <nav class="nav">
     <a href="index.html" class="nav__brand">
       <img src="images/logo.svg" alt="" />
-      Bridget's Boutique — Admin
+      <span class="admin-brand-full">Bridget's Boutique — </span>Admin
     </a>
     <div class="nav__cta">
       <a class="btn btn--outline btn--small" href="index.html" target="_blank" rel="noopener">View Site</a>
@@ -91,10 +91,14 @@
           </div>
           <div>
             <label for="new-photo">Photo (optional)</label>
-            <input type="file" id="new-photo" accept="image/*" />
+            <label class="admin-file-label" style="width:100%;">
+              Choose Photo
+              <input type="file" id="new-photo" accept="image/*" />
+            </label>
           </div>
-          <div style="display:flex; align-items:flex-end;">
-            <button type="submit" class="btn btn--primary btn--small">Add Product</button>
+          <div>
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn--primary btn--block">Add Product</button>
           </div>
         </form>
       </div>

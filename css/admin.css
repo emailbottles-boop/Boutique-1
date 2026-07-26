@@ -30,6 +30,15 @@
 .admin-header h1 { margin: 0; font-size: 1.7rem; }
 .admin-header .btn { white-space: nowrap; }
 
+/* Admin site header: keep it on one line even on small phones */
+.site-header .nav__brand { font-size: 1.05rem; gap: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.site-header .nav__brand img { flex-shrink: 0; }
+.site-header .nav__cta { gap: 0.5rem; }
+.site-header .nav__cta .btn { white-space: nowrap; padding: 0.6rem 1rem; font-size: 0.78rem; }
+@media (max-width: 420px) {
+  .site-header .nav__brand span.admin-brand-full { display: none; }
+}
+
 .admin-tabs {
   display: flex;
   gap: 0.5rem;
@@ -65,18 +74,23 @@
   margin-bottom: 1.25rem;
 }
 
-.admin-product-row {
-  display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: 1.1rem;
-}
-@media (min-width: 640px) {
-  .admin-product-row { grid-template-columns: 90px 1fr auto; align-items: start; }
+/* Product card: compact photo+name+price "head", then secondary fields,
+   then full-width stacked action buttons — designed mobile-first since
+   this is the view most owners will use from their phone in-store. */
+
+.admin-product-card { padding: 1.1rem; }
+
+.admin-product-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
 }
 
 .admin-product-thumb {
-  width: 72px;
-  height: 72px;
+  position: relative;
+  width: 68px;
+  height: 68px;
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--color-cream-dark);
@@ -84,45 +98,91 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  cursor: pointer;
+  border: 1px dashed rgba(43,37,35,0.25);
 }
-@media (min-width: 640px) { .admin-product-thumb { width: 90px; height: 90px; } }
 .admin-product-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.admin-product-thumb span { font-size: 0.62rem; color: var(--color-charcoal-soft); text-align: center; padding: 0 4px; }
+.admin-product-thumb span { font-size: 0.6rem; color: var(--color-charcoal-soft); text-align: center; padding: 0 4px; line-height: 1.2; }
+.admin-product-thumb input[type="file"] { display: none; }
+.admin-product-thumb__badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-charcoal);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  border: 2px solid var(--color-white);
+}
+
+.admin-product-head__text { flex: 1; min-width: 0; }
+.admin-product-head__text input {
+  border: none;
+  background: transparent;
+  padding: 0.15rem 0;
+  width: 100%;
+}
+.admin-product-head__text .f-name {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid transparent;
+}
+.admin-product-head__text .f-price {
+  font-size: 0.95rem;
+  color: var(--color-charcoal-soft);
+  border-bottom: 1px solid transparent;
+}
+.admin-product-head__text input:focus {
+  outline: none;
+  border-bottom-color: var(--color-gold);
+}
 
 .admin-fields {
   display: grid;
   gap: 0.7rem;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: 1fr;
+  margin-bottom: 1rem;
+}
+@media (min-width: 560px) {
+  .admin-fields { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 }
 .admin-fields label { margin-bottom: 0.25rem; }
 .admin-fields input,
 .admin-fields select {
-  padding: 0.55rem 0.7rem;
-  font-size: 0.88rem;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.92rem;
 }
 
 .admin-product-actions {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 0.6rem;
-  align-items: center;
-  margin-top: 0.9rem;
 }
-@media (min-width: 640px) {
-  .admin-product-actions { flex-direction: column; margin-top: 0; }
+@media (min-width: 560px) {
+  .admin-product-actions { flex-direction: row; }
 }
+.admin-product-actions .btn { flex: 1; }
 
 .admin-file-label {
-  display: inline-block;
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-gold);
   cursor: pointer;
   border: 1px solid var(--color-gold);
-  padding: 0.4rem 0.7rem;
+  padding: 0.62rem 1rem;
   border-radius: 999px;
   text-align: center;
+  flex: 1;
 }
 .admin-file-label input { display: none; }
 
