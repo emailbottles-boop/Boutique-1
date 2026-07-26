@@ -64,13 +64,14 @@ host or pay for — the site talks to Firebase directly from the browser.
    **Users** tab → Add user → enter the owner's email and a password. That's their
    admin login for `/admin.html`.
 5. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
-   icon → register an app (nickname doesn't matter, no hosting needed) → copy the
-   `firebaseConfig` object it gives you into `js/firebase-config.js`, replacing the
-   placeholder values.
+   icon → register an app (nickname doesn't matter, check "Also set up Firebase
+   Hosting" if offered) → copy the `firebaseConfig` object it gives you into
+   `js/firebase-config.js`, replacing the placeholder values.
 6. **Firestore Database** → **Rules** tab → paste in the contents of
    `firebase/firestore.rules` → Publish.
 7. **Storage** → **Rules** tab → paste in the contents of `firebase/storage.rules` → Publish.
-8. Redeploy the site (push to GitHub — Netlify/Vercel/Pages will pick it up automatically).
+8. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
+   same login, so hosting + database + photo storage + admin login are all in one place.
 9. Visit `yoursite.com/admin.html` and log in with the email/password from step 4.
 
 Once products are added in the dashboard, they replace the demo listings on the
@@ -102,4 +103,39 @@ a fixed, predictable filename that can be swapped directly on GitHub:
 
 ## Deploying
 
-No build step — any static host works. Easiest options: drag-and-drop the folder into Netlify, or serve via GitHub Pages from this branch/`main`.
+**Recommended: Firebase Hosting** — same project as the backend above, so there's
+just one account and one dashboard for everything (site, database, photo storage,
+admin login), instead of juggling a separate host.
+
+### Manual deploy (one-time setup, ~5 minutes)
+
+1. Install the Firebase CLI: `npm install -g firebase-tools`
+2. `firebase login` (opens a browser to sign in with the Google account that owns the Firebase project)
+3. In this project's folder, edit `.firebaserc` and replace `YOUR_FIREBASE_PROJECT_ID` with the actual project ID (found in Firebase Console → Project settings).
+4. `firebase deploy --only hosting`
+5. The CLI prints the live URL (`your-project.web.app`) — that's the site, live, for free.
+
+Run step 4 again any time you want to push an update manually.
+
+### Auto-deploy from GitHub (recommended — no manual step ever again)
+
+A workflow is already set up at `.github/workflows/firebase-deploy.yml` that deploys
+automatically every time this branch is pushed. To turn it on:
+
+1. In Firebase Console → Project settings → **Service accounts** → "Generate new private key" → downloads a JSON file. Keep it secret (don't commit it to the repo).
+2. On GitHub, go to the repo's **Settings → Secrets and variables → Actions** → **New repository secret**:
+   - `FIREBASE_SERVICE_ACCOUNT` — paste the entire contents of the JSON file from step 1.
+   - `FIREBASE_PROJECT_ID` — the Firebase project ID.
+3. Push any change to this branch — the "Deploy to Firebase Hosting" check runs automatically and the live site updates within a minute or two.
+
+From then on, pushing code (including from a Claude Code session) is the only
+"deploy" step needed — the admin dashboard needs no deploy at all since it reads
+live from Firebase directly.
+
+### Alternative: a different static host
+
+If you'd rather not use Firebase Hosting, any static host still works fine for the
+site itself (Netlify, Vercel, GitHub Pages, etc.) — the admin dashboard and backend
+work the same way regardless of where the static files are served from, since they
+talk to Firebase directly from the browser either way. The main advantage of
+Firebase Hosting specifically is having one login for everything instead of two.
