@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// Paste this into: Firebase Console > Storage > Rules > Publish.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Product photos: anyone can view them (public site), only the
+    // logged-in admin can upload, replace, or delete them.
+    match /product-photos/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

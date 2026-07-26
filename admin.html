@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin | Bridget's Boutique</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+<body style="background: var(--color-cream-dark);">
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="nav__brand">
+      <img src="images/logo.svg" alt="" />
+      Bridget's Boutique — Admin
+    </a>
+    <div class="nav__cta">
+      <a class="btn btn--outline btn--small" href="index.html" target="_blank" rel="noopener">View Site</a>
+      <button id="logout-btn" class="btn btn--primary btn--small" style="display:none;">Log Out</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div id="not-configured" class="admin-shell" style="display:none;">
+    <div class="admin-notice">
+      Firebase isn't connected yet. Fill in <code>js/firebase-config.js</code> with your Firebase project's
+      config values, set up Firestore/Storage/Auth, and reload this page. See the "Free Backend Setup"
+      section in README.md for step-by-step instructions.
+    </div>
+  </div>
+
+  <div id="login-view" class="admin-login" style="display:none;">
+    <h1>Admin Login</h1>
+    <p>Log in with the account created for you in Firebase Authentication.</p>
+    <form id="login-form">
+      <div>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required autocomplete="username" />
+      </div>
+      <div>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn--primary btn--block">Log In</button>
+      <p id="login-error" class="form-status form-status--error"></p>
+    </form>
+  </div>
+
+  <div id="dashboard-view" class="admin-shell" style="display:none;">
+    <div class="admin-header">
+      <h1>Dashboard</h1>
+      <span id="user-email" style="font-size:0.85rem; color:var(--color-charcoal-soft);"></span>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab is-active" data-tab="products">Products</button>
+      <button class="admin-tab" data-tab="inquiries">Inquiries <span id="inquiry-count-badge"></span></button>
+    </div>
+
+    <section id="products-panel" class="admin-panel is-active">
+      <div class="admin-card">
+        <h3 style="margin-bottom:1rem;">Add a New Product</h3>
+        <form id="new-product-form" class="admin-fields">
+          <div>
+            <label for="new-name">Name</label>
+            <input type="text" id="new-name" required />
+          </div>
+          <div>
+            <label for="new-price">Price</label>
+            <input type="text" id="new-price" placeholder="$48" required />
+          </div>
+          <div>
+            <label for="new-category">Category</label>
+            <select id="new-category">
+              <option value="dresses">Dresses &amp; Bottoms</option>
+              <option value="tops">Tops</option>
+              <option value="outerwear">Outerwear</option>
+              <option value="accessories">Accessories</option>
+            </select>
+          </div>
+          <div>
+            <label for="new-tag">Tag (optional)</label>
+            <input type="text" id="new-tag" placeholder="New" />
+          </div>
+          <div>
+            <label for="new-photo">Photo (optional)</label>
+            <input type="file" id="new-photo" accept="image/*" />
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button type="submit" class="btn btn--primary btn--small">Add Product</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="products-list"></div>
+    </section>
+
+    <section id="inquiries-panel" class="admin-panel">
+      <div id="inquiries-list"></div>
+    </section>
+  </div>
+</main>
+
+<div id="toast" class="admin-toast"></div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
