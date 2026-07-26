@@ -1,34 +1,53 @@
 // Bridget's Boutique — product/new-arrival data
 //
-// HOW TO ADD OR REPLACE A PRODUCT PHOTO (no code editing needed):
-//   Each product below has a `photo` filename. Upload an image with that
-//   exact name into the /images folder (GitHub: open /images, click
-//   "Add file" > "Upload files", drop in a file named e.g. "product-2.jpg").
-//   If a matching file doesn't exist yet, the site automatically shows a
-//   placeholder box instead — nothing breaks. As soon as the real file is
-//   uploaded with the right name, it appears on the site automatically.
-//
-// To change a product's name, price, or category, edit the fields below.
-// categories used for shop.html filters: "dresses", "tops", "outerwear", "accessories"
+// If Firebase is configured (see js/firebase-config.js), products are loaded
+// live from the "products" Firestore collection — managed from admin.html.
+// Until then, the site falls back to the demo data below, and every
+// product's `photoUrl` points at a predictable local filename, so photos can
+// still be swapped by uploading a file into /images with a matching name
+// (see README.md).
 
-const PRODUCTS = [
-  { id: "p1", name: "Floral Wrap Dress",     category: "dresses",     price: "$68", tag: "Example", photo: "product-1.jpg" },
-  { id: "p2", name: "Cropped Denim Jacket",  category: "outerwear",   price: "$74", tag: "New",      photo: "product-2.jpg" },
-  { id: "p3", name: "Ribbed Knit Top",       category: "tops",        price: "$38", tag: "New",      photo: "product-3.jpg" },
-  { id: "p4", name: "Gold Layered Necklace", category: "accessories", price: "$26", tag: "New",      photo: "product-4.jpg" },
-  { id: "p5", name: "Red Skinny Jeans",      category: "dresses",     price: "$54", tag: "Example",  photo: "product-5.jpg" },
-  { id: "p6", name: "Suede Crossbody Bag",   category: "accessories", price: "$58", tag: null,       photo: "product-6.jpg" },
-  { id: "p7", name: "Off-Shoulder Blouse",   category: "tops",        price: "$42", tag: null,       photo: "product-7.jpg" },
-  { id: "p8", name: "Sherpa-Lined Vest",     category: "outerwear",   price: "$66", tag: null,       photo: "product-8.jpg" },
+import { db, FIREBASE_CONFIGURED } from "./firebase-init.js";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+const FALLBACK_PRODUCTS = [
+  { id: "p1", name: "Floral Wrap Dress",     category: "dresses",     price: "$68", tag: "Example", photoUrl: "images/product-1.jpg" },
+  { id: "p2", name: "Cropped Denim Jacket",  category: "outerwear",   price: "$74", tag: "New",      photoUrl: "images/product-2.jpg" },
+  { id: "p3", name: "Ribbed Knit Top",       category: "tops",        price: "$38", tag: "New",      photoUrl: "images/product-3.jpg" },
+  { id: "p4", name: "Gold Layered Necklace", category: "accessories", price: "$26", tag: "New",      photoUrl: "images/product-4.jpg" },
+  { id: "p5", name: "Red Skinny Jeans",      category: "dresses",     price: "$54", tag: "Example",  photoUrl: "images/product-5.jpg" },
+  { id: "p6", name: "Suede Crossbody Bag",   category: "accessories", price: "$58", tag: null,       photoUrl: "images/product-6.jpg" },
+  { id: "p7", name: "Off-Shoulder Blouse",   category: "tops",        price: "$42", tag: null,       photoUrl: "images/product-7.jpg" },
+  { id: "p8", name: "Sherpa-Lined Vest",     category: "outerwear",   price: "$66", tag: null,       photoUrl: "images/product-8.jpg" },
 ];
+
+async function loadProducts() {
+  if (!FIREBASE_CONFIGURED) return FALLBACK_PRODUCTS;
+
+  try {
+    const q = query(collection(db, "products"), orderBy("sortOrder"));
+    const snap = await getDocs(q);
+    if (snap.empty) return FALLBACK_PRODUCTS;
+    return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+  } catch (err) {
+    console.error("Couldn't load live products from Firebase, showing demo data instead:", err);
+    return FALLBACK_PRODUCTS;
+  }
+}
 
 function productCardHTML(product) {
   const tag = product.tag ? `<span class="product-card__tag">${product.tag}</span>` : "";
+  const photo = product.photoUrl || "";
 
   return `
     <div class="product-card" data-category="${product.category}">
       <div class="product-card__image">
-        <img src="images/${product.photo}" alt="${product.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+        <img src="${photo}" alt="${product.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
       </div>
       <div class="product-card__body">
         ${tag}
@@ -40,8 +59,8 @@ function productCardHTML(product) {
   `;
 }
 
-// If a product photo hasn't been uploaded yet, swap the broken image for a
-// clean placeholder box instead of showing a broken-image icon.
+// If a photo fails to load (missing file, or a product with no photo yet),
+// swap it for a clean placeholder box instead of a broken-image icon.
 function attachImageFallbacks(container) {
   container.querySelectorAll(".product-card__image img").forEach((img) => {
     img.addEventListener(
@@ -57,16 +76,20 @@ function attachImageFallbacks(container) {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+async function renderProducts() {
+  const products = await loadProducts();
+
   const featured = document.querySelector("#featured-products");
   if (featured) {
-    featured.innerHTML = PRODUCTS.slice(0, 4).map(productCardHTML).join("");
+    featured.innerHTML = products.slice(0, 4).map(productCardHTML).join("");
     attachImageFallbacks(featured);
   }
 
   const fullGrid = document.querySelector("#all-products");
   if (fullGrid) {
-    fullGrid.innerHTML = PRODUCTS.map(productCardHTML).join("");
+    fullGrid.innerHTML = products.map(productCardHTML).join("");
     attachImageFallbacks(fullGrid);
   }
-});
+}
+
+renderProducts();

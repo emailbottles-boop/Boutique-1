@@ -1,0 +1,181 @@
+/* Bridget's Boutique — admin dashboard styles */
+
+.admin-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+.admin-login {
+  max-width: 380px;
+  margin: 5rem auto;
+  background: var(--color-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem;
+  text-align: center;
+}
+.admin-login h1 { font-size: 1.6rem; margin-bottom: 0.4rem; }
+.admin-login p { color: var(--color-charcoal-soft); margin-bottom: 1.5rem; }
+.admin-login form { text-align: left; display: grid; gap: 1rem; }
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.admin-header h1 { margin: 0; font-size: 1.7rem; }
+.admin-header .btn { white-space: nowrap; }
+
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(43,37,35,0.12);
+}
+.admin-tab {
+  background: none;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--color-charcoal-soft);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.admin-tab.is-active {
+  color: var(--color-charcoal);
+  border-bottom-color: var(--color-gold);
+}
+
+.admin-panel { display: none; }
+.admin-panel.is-active { display: block; }
+
+.admin-card {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-product-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 1.1rem;
+}
+@media (min-width: 640px) {
+  .admin-product-row { grid-template-columns: 90px 1fr auto; align-items: start; }
+}
+
+.admin-product-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+@media (min-width: 640px) { .admin-product-thumb { width: 90px; height: 90px; } }
+.admin-product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.admin-product-thumb span { font-size: 0.62rem; color: var(--color-charcoal-soft); text-align: center; padding: 0 4px; }
+
+.admin-fields {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+.admin-fields label { margin-bottom: 0.25rem; }
+.admin-fields input,
+.admin-fields select {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.88rem;
+}
+
+.admin-product-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.6rem;
+  align-items: center;
+  margin-top: 0.9rem;
+}
+@media (min-width: 640px) {
+  .admin-product-actions { flex-direction: column; margin-top: 0; }
+}
+
+.admin-file-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-gold);
+  cursor: pointer;
+  border: 1px solid var(--color-gold);
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  text-align: center;
+}
+.admin-file-label input { display: none; }
+
+.admin-empty {
+  text-align: center;
+  color: var(--color-charcoal-soft);
+  padding: 3rem 1rem;
+}
+
+.admin-inquiry {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.admin-inquiry__meta { font-size: 0.8rem; color: var(--color-charcoal-soft); margin-bottom: 0.4rem; }
+.admin-inquiry__status {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-blush);
+  height: fit-content;
+}
+.admin-inquiry__status.is-handled { background: var(--color-cream-dark); color: var(--color-charcoal-soft); }
+
+.admin-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-charcoal);
+  color: var(--color-white);
+  padding: 0.8rem 1.4rem;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 300;
+}
+.admin-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.admin-notice {
+  background: var(--color-cream-dark);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--color-charcoal-soft);
+  margin-bottom: 2rem;
+}

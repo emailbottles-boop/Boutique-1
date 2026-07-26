@@ -103,12 +103,11 @@
         <p>Fill this out and we'll follow up with availability, pricing, and pickup or shipping options.</p>
 
         <!--
-          Formspree placeholder: replace YOUR_FORM_ID below with a real
-          endpoint from https://formspree.io once the form is created,
-          then remove the placeholder handling in js/script.js will
-          automatically let the form submit normally.
+          Submissions save to Firebase (see js/contact.js) once
+          js/firebase-config.js is filled in — until then this shows a
+          "not connected yet" message instead of losing the submission.
         -->
-        <form id="order-form" class="form-grid" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+        <form id="order-form" class="form-grid">
           <div class="form-row form-row--2">
             <div>
               <label for="name">Full Name</label>
@@ -238,6 +237,7 @@
 
 
 <script src="js/script.js"></script>
+<script type="module" src="js/contact.js"></script>
 <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>
