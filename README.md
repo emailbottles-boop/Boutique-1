@@ -78,8 +78,9 @@ straight from the visitor's browser, so it works regardless of who serves the HT
    = the **User UID** from step 4 → add any field you like (e.g. `note` = `owner`)
    → Save. **This step is what actually grants access** — see the security note below.
 6. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
-   icon → register an app (nickname doesn't matter, check "Also set up Firebase
-   Hosting" if offered) → copy the `firebaseConfig` object it gives you into
+   icon → register an app (nickname doesn't matter; leave "Also set up Firebase
+   Hosting" UNCHECKED — the site is hosted on GitHub Pages, so Firebase Hosting
+   would just be an unused extra) → copy the `firebaseConfig` object it gives you into
    `js/firebase-config.js`, replacing the placeholder values.
 7. **Firestore Database** → **Rules** tab → paste in the contents of
    `firebase/firestore.rules` → Publish.
