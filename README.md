@@ -14,7 +14,9 @@ A static website for Bridget's Boutique, a women's clothing boutique in downtown
 - `js/products.js` — loads products (live from Firebase once configured, otherwise a small built-in demo list)
 - `js/contact.js` — handles the contact/order form submission
 - `js/admin.js`, `js/firebase-init.js`, `js/firebase-config.js` — the admin dashboard and its Firebase connection
-- `firebase/firestore.rules`, `firebase/storage.rules` — security rules to paste into the Firebase console
+- `firebase/firestore.rules` — security rules to paste into the Firebase console
+- `firebase/storage.rules` — optional/unused; only needed if you ever enable Firebase Storage
+- `js/image-utils.js` — compresses photos in the browser so they fit in Firestore
 - `404.html` — styled not-found page
 - `robots.txt` / `sitemap.xml` — SEO crawling config
 - `images/` — site images
@@ -59,7 +61,10 @@ host or pay for — the site talks to Firebase directly from the browser.
 
 1. Go to https://console.firebase.google.com and create a new project (free Spark plan).
 2. **Firestore Database** → Create database → start in production mode.
-3. **Storage** → Get started (accept the default bucket).
+3. *(Skip — Firebase Storage is intentionally not used. Product photos are
+   compressed in the browser and saved into Firestore instead, so the whole
+   project stays on the free Spark plan with no credit card attached. See
+   "Where photos are stored" below.)*
 4. **Authentication** → Sign-in method → enable **Email/Password**. Then go to the
    **Users** tab → Add user → enter the owner's email address and a **temporary
    password** (Firebase requires at least 6 characters — e.g. `Boutique2026!`).
@@ -73,7 +78,8 @@ host or pay for — the site talks to Firebase directly from the browser.
    `js/firebase-config.js`, replacing the placeholder values.
 7. **Firestore Database** → **Rules** tab → paste in the contents of
    `firebase/firestore.rules` → Publish.
-8. **Storage** → **Rules** tab → paste in the contents of `firebase/storage.rules` → Publish.
+8. *(Skip — no Storage bucket to configure. `firebase/storage.rules` is kept only
+   in case you enable Storage later; see the file's header.)*
 9. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
    same login, so hosting + database + photo storage + admin login are all in one place.
 10. Visit `yoursite.com/admin.html` and log in with the email + temporary password
@@ -100,13 +106,34 @@ were to loosen the rules to `request.auth != null` instead, anyone on the intern
 could sign up and take over the site. Don't.
 
 Other protections already in place:
-- Product photo uploads are limited to real image files under 10 MB.
+- Product photos are validated as real images and size-capped well below
+  Firestore's 1 MB per-document limit.
 - Contact form submissions are shape- and length-checked, so the form can't be
   used to dump arbitrary data into the database.
-- Everything outside `product-photos/` in Storage is unreachable from the website.
 - `admin.html` is excluded from search engines (`robots.txt` + a `noindex` tag).
 - The owner can self-recover with "Forgot your password?" on the login screen —
   Firebase emails them a reset link, so you never need to hold their password.
+
+### Where photos are stored (and why there's no Firebase Storage)
+
+Enabling Firebase Storage on newer projects requires upgrading to the Blaze
+pay-as-you-go plan and putting a credit card on file. It would still cost $0 at a
+single boutique's scale, but it's an unnecessary hurdle — so this project skips
+Storage entirely.
+
+Instead, when a photo is chosen in the dashboard, `js/image-utils.js` resizes it to
+a maximum 1000px edge and compresses it to JPEG **in the browser**, then saves it
+straight into the product's Firestore document as a data URL. A 9.6 MB camera photo
+comes out around 70 KB; a typical product shot lands at 100-250 KB — comfortably
+inside Firestore's 1 MB per-document limit, and inside the free tier's 1 GiB total.
+
+**What this means in practice:**
+- No billing account, no credit card, genuinely free.
+- Photo uploads work normally in the dashboard — the owner sees no difference.
+- Photos are served from the database rather than a CDN. Fine for a catalog of a
+  few dozen items; if the shop ever grows into the hundreds, switching to Storage
+  would be the upgrade (the rules for it are already written in
+  `firebase/storage.rules`).
 
 ### How the admin password is protected
 
