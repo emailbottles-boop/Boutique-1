@@ -6,12 +6,15 @@
 // Firestore collection and show up in admin.html. Until then, submitting
 // shows a friendly "not connected yet" message instead.
 
-import { db, FIREBASE_CONFIGURED } from "./firebase-init.js";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+// Firebase is imported lazily inside the submit handler, not at the top of the
+// file. With a static import, an unreachable Firebase CDN would stop this whole
+// module from loading — which would silently kill the submit handler and let
+// the form do nothing at all. Loading it on demand means the worst case is a
+// clear "call us instead" message rather than a dead button.
+
+const CALL_INSTEAD =
+  "Online form submission isn't available right now — please call (360) 625-8032 " +
+  "or message us on Instagram/Facebook and we'll take care of you.";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("#order-form");
@@ -36,18 +39,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-
-    if (!FIREBASE_CONFIGURED) {
-      showStatus(
-        "Online form submission isn't connected yet — please call (360) 625-8032 or message us on Instagram/Facebook to place this order for now.",
-        false
-      );
-      return;
-    }
-
     if (submitBtn) submitBtn.disabled = true;
 
     try {
+      const { db, FIREBASE_CONFIGURED } = await import("./firebase-init.js");
+      if (!FIREBASE_CONFIGURED || !db) {
+        showStatus(CALL_INSTEAD, false);
+        return;
+      }
+
+      const { collection, addDoc, serverTimestamp } = await import(
+        "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js"
+      );
+
       await addDoc(collection(db, "inquiries"), {
         name: form.name.value,
         email: form.email.value,
@@ -62,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showStatus("Thanks! We got your message and will follow up soon.", true);
     } catch (err) {
       console.error("Failed to submit inquiry:", err);
-      showStatus("Something went wrong sending that — please call (360) 625-8032 instead.", false);
+      showStatus(CALL_INSTEAD, false);
     } finally {
       if (submitBtn) submitBtn.disabled = false;
     }

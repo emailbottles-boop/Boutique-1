@@ -3,7 +3,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   initNav();
   initActiveLink();
-  initShopFilters();
   initHeaderScroll();
   initReveal();
 });
@@ -63,23 +62,4 @@ function initReveal() {
   );
 
   targets.forEach((el) => observer.observe(el));
-}
-
-function initShopFilters() {
-  const buttons = document.querySelectorAll(".filter-btn");
-  const cards = document.querySelectorAll("[data-category]");
-  if (!buttons.length || !cards.length) return;
-
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      buttons.forEach((b) => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-      const category = btn.dataset.filter;
-
-      cards.forEach((card) => {
-        const match = category === "all" || card.dataset.category === category;
-        card.style.display = match ? "" : "none";
-      });
-    });
-  });
 }

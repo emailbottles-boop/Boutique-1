@@ -308,20 +308,10 @@ function renderProductRow(id, product) {
   fields.className = "admin-fields";
   fields.innerHTML = `
     <div>
-      <label>Category</label>
-      <select class="f-category">
-        <option value="dresses">Dresses &amp; Bottoms</option>
-        <option value="tops">Tops</option>
-        <option value="outerwear">Outerwear</option>
-        <option value="accessories">Accessories</option>
-      </select>
-    </div>
-    <div>
       <label>Tag (optional)</label>
       <input type="text" class="f-tag" placeholder="e.g. New" value="${escapeAttr(product.tag || "")}" />
     </div>
   `;
-  fields.querySelector(".f-category").value = product.category || "dresses";
 
   const actions = document.createElement("div");
   actions.className = "admin-product-actions";
@@ -348,7 +338,6 @@ function renderProductRow(id, product) {
       await updateDoc(doc(db, "products", id), {
         name: nameInput.value,
         price: priceInput.value,
-        category: fields.querySelector(".f-category").value,
         tag: fields.querySelector(".f-tag").value || null,
         photoUrl,
       });
@@ -388,14 +377,12 @@ document.getElementById("new-product-form").addEventListener("submit", async (e)
   try {
     const name = document.getElementById("new-name").value;
     const price = document.getElementById("new-price").value;
-    const category = document.getElementById("new-category").value;
     const tag = document.getElementById("new-tag").value || null;
     const file = document.getElementById("new-photo").files[0];
 
     const docRef = await addDoc(collection(db, "products"), {
       name,
       price,
-      category,
       tag,
       photoUrl: null,
       sortOrder: Date.now(),
