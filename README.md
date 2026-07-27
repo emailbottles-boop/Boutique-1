@@ -129,6 +129,25 @@ a fixed, predictable filename that can be swapped directly on GitHub:
 | `images/product-1.jpg` through `images/product-8.jpg` | The 8 demo New Arrivals product cards (only used when Firebase isn't configured) |
 | `images/logo.svg` | Logo shown in the nav and browser tab |
 
+## Demo mode → going live
+
+This site currently ships in **demo mode**: it is deliberately hidden from Google
+so a pre-launch demo can be shown to the client without a site carrying their
+business name, address, and phone number getting indexed before they've agreed to
+it. (If they decline, an indexed demo is slow and annoying to get removed.)
+
+**To take it live once the client approves — 3 steps:**
+
+1. Delete the `DEMO-NOINDEX` comment and the `<meta name="robots" content="noindex, nofollow" />`
+   line directly below it from `index.html`, `shop.html`, `about.html`, and `contact.html`.
+   (Leave the one in `admin.html` — the dashboard should stay unindexed permanently.)
+2. In `robots.txt`, delete the `Disallow: /` line under `User-agent: *` and
+   uncomment `Allow: /`.
+3. Update the `Sitemap:` URL in `robots.txt`, and the domain in `sitemap.xml`, to
+   the real domain.
+
+Only after that should the site be submitted to Google Search Console.
+
 ## To go fully live
 
 1. **Backend** — set up Firebase (see above) so the owner can manage products and see inquiries without touching code.
