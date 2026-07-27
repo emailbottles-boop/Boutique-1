@@ -90,7 +90,7 @@
 <main id="main-content">
 
   <section class="hero">
-    <img class="hero__bg" src="images/store-display.jpg" alt="" aria-hidden="true"
+    <img class="hero__bg" data-site-image="hero" src="images/store-display.jpg" alt="" aria-hidden="true"
          width="704" height="930" fetchpriority="high" decoding="async" />
     <div class="hero__copy">
       <span class="eyebrow">Downtown Enumclaw, WA</span>
@@ -147,7 +147,7 @@
   <section class="section section--tight" style="background: var(--color-white);">
     <div class="container split">
       <div class="split__image">
-        <img src="images/storefront.jpg" alt="The Bridget's Boutique storefront on Cole Street in downtown Enumclaw"
+        <img data-site-image="storefront" src="images/storefront.jpg" alt="The Bridget's Boutique storefront on Cole Street in downtown Enumclaw"
              width="1200" height="814" loading="lazy" decoding="async"
              style="width:100%; height:auto; min-height:320px; object-fit:cover; border-radius: var(--radius);" />
       </div>
@@ -269,6 +269,7 @@
 
 <script src="js/script.js"></script>
 <script type="module" src="js/products.js"></script>
+<script type="module">import { applySiteImages } from "./js/site-images.js"; applySiteImages();</script>
 <!-- Instagram's embed script is heavy (script + iframe + their own assets).
      It's loaded only once the embed scrolls near the viewport, so it costs
      nothing on first paint. See initInstagramEmbed() in js/script.js. -->

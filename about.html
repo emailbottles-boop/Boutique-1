@@ -100,7 +100,7 @@
   <section class="section">
     <div class="container split">
       <div class="split__image">
-        <img src="images/store-display.jpg" alt="A curated display inside Bridget's Boutique featuring a dress, handbags, hats, and accessories"
+        <img data-site-image="hero" src="images/store-display.jpg" alt="A curated display inside Bridget's Boutique featuring a dress, handbags, hats, and accessories"
              width="704" height="930" loading="lazy" decoding="async"
              style="width:100%; height:auto; min-height:380px; object-fit:cover; border-radius: var(--radius);" />
       </div>
@@ -229,6 +229,7 @@
 
 
 <script src="js/script.js"></script>
+<script type="module">import { applySiteImages } from "./js/site-images.js"; applySiteImages();</script>
 <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>

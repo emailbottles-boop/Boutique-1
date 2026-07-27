@@ -66,5 +66,21 @@ service cloud.firestore {
       allow create: if validInquiry();
       allow read, update, delete: if isAdmin();
     }
+
+    // The page photos that aren't product items (hero, storefront). Public
+    // site reads them; only an allowlisted admin can change them. Same
+    // size guard as products, since these are stored as compressed data
+    // URLs rather than in Firebase Storage.
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['hero', 'storefront', 'updatedAt'])
+        && (!('hero' in request.resource.data)
+            || request.resource.data.hero == null
+            || request.resource.data.hero.size() < 900000)
+        && (!('storefront' in request.resource.data)
+            || request.resource.data.storefront == null
+            || request.resource.data.storefront.size() < 900000);
+    }
   }
 }
