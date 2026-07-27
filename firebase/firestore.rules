@@ -1,21 +1,62 @@
 rules_version = '2';
 
 // Paste this into: Firebase Console > Firestore Database > Rules > Publish.
+//
+// SECURITY MODEL
+// Firebase's Email/Password sign-in lets ANYONE create an account against
+// this project from a browser — the API key in firebase-config.js is public
+// by design. So "is this person logged in?" is NOT a safe permission check
+// on its own.
+//
+// Instead, write access requires the user's UID to be listed in the
+// `admins` collection. Those documents can only be created from the
+// Firebase Console (rules below forbid writing them from the website), so
+// a stranger who signs themselves up gets an account that can do nothing.
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Products: anyone can read (public site), only the logged-in admin
-    // can add, edit, or delete.
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // Inquiries: anyone can submit (the contact form), but only the
-    // logged-in admin can read, update (e.g. mark handled), or delete them.
+    // Basic shape/size checks so the public contact form can't be used to
+    // dump arbitrary data or huge payloads into the database.
+    function validInquiry() {
+      let d = request.resource.data;
+      return d.name is string && d.name.size() > 0 && d.name.size() <= 100
+        && d.email is string && d.email.size() > 0 && d.email.size() <= 200
+        && d.message is string && d.message.size() > 0 && d.message.size() <= 2000
+        && d.status == 'new';
+    }
+
+    // The admin allowlist. Add a document here (ID = the user's Firebase
+    // Auth UID) to grant someone admin access. Never writable from the site.
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Each admin's own settings (e.g. whether they've changed their
+    // starting password). Readable/writable only by that admin.
+    match /adminProfile/{uid} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == uid
+        && exists(/databases/$(database)/documents/admins/$(uid));
+    }
+
+    // Products: public site reads them; only an allowlisted admin writes.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Inquiries: anyone can submit one (that's the point of a contact
+    // form), but only an admin can read or manage them.
     match /inquiries/{inquiryId} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow create: if validInquiry();
+      allow read, update, delete: if isAdmin();
     }
   }
 }
