@@ -1,22 +1,23 @@
 // Bridget's Boutique — Firebase configuration
 //
-// Fill these in from: Firebase Console > Project Settings > General >
-// "Your apps" > Web app > SDK setup and configuration.
+// From: Firebase Console > Project Settings > General > "Your apps" > Web app.
 //
-// This is safe to be public — Firebase config values are not secrets.
-// Actual security is enforced by Firestore Rules and Storage Rules
-// (see /firebase/firestore.rules and /firebase/storage.rules), not by
-// hiding this file.
+// These values are safe to be public — they are identifiers, not secrets, and
+// they ship in the browser on every page load by design. Access is controlled
+// by the Firestore security rules plus the `admins` allowlist (see
+// /firebase/firestore.rules), never by hiding this file.
 
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyDdVqfDgXRI0HIE0s9p3mckOrLjopvIWrc",
+  authDomain: "boutique-1-56fac.firebaseapp.com",
+  projectId: "boutique-1-56fac",
+  storageBucket: "boutique-1-56fac.firebasestorage.app",
+  messagingSenderId: "866636488987",
+  appId: "1:866636488987:web:00222c73ca65838c4f33be",
 };
 
-// Until the values above are filled in, the site falls back to demo data
-// and a "not connected yet" message on the contact form — nothing breaks.
-export const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "YOUR_API_KEY";
+// Guard so the site degrades gracefully if this is ever blanked out: the
+// showcase falls back to its built-in items and the contact form shows a
+// "call us instead" message rather than failing silently.
+export const FIREBASE_CONFIGURED =
+  Boolean(firebaseConfig.apiKey) && !firebaseConfig.apiKey.startsWith("YOUR_");
