@@ -97,39 +97,12 @@
     </div>
 
     <section id="products-panel" class="admin-panel is-active">
-      <div class="admin-card">
-        <h3 style="margin-bottom:0.4rem;">Add an Item</h3>
-        <p style="font-size:0.86rem; color:var(--color-charcoal-soft); margin-bottom:1.2rem;">
-          Showing what's in the shop right now — add a few pieces, and swap them out as your racks change.
-        </p>
-        <form id="new-product-form" class="admin-fields">
-          <div>
-            <label for="new-name">Name</label>
-            <input type="text" id="new-name" required />
-          </div>
-          <div>
-            <label for="new-price">Price</label>
-            <input type="text" id="new-price" placeholder="$48" required />
-          </div>
-          <div>
-            <label for="new-tag">Tag (optional)</label>
-            <input type="text" id="new-tag" placeholder="e.g. New" />
-          </div>
-          <div>
-            <label for="new-photo">Photo (optional)</label>
-            <label class="admin-file-label" style="width:100%;">
-              Choose Photo
-              <input type="file" id="new-photo" accept="image/*" />
-            </label>
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button type="submit" class="btn btn--primary btn--block">Add Product</button>
-          </div>
-        </form>
-      </div>
+      <p class="admin-hint">
+        This is what your shop page looks like. Tap any photo to swap it, tap the
+        name or price to change it. Your edits go live when you press Save.
+      </p>
 
-      <div id="products-list"></div>
+      <div id="products-list" class="admin-preview-grid"></div>
     </section>
 
     <section id="inquiries-panel" class="admin-panel">
