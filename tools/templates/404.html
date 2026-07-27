@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Page Not Found | @@BUSINESS_NAME@@</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="@@GOOGLE_FONTS_HREF@@" rel="stylesheet">
+<link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="nav__brand">
+      <img src="images/logo.svg" alt="" />
+      @@BUSINESS_NAME@@
+    </a>
+    <ul class="nav__links">
+      <li><a href="index.html">Home</a></li>
+      @@NAV_CATALOG_LI@@
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact / Order</a></li>
+    </ul>
+    <div class="nav__cta">
+      <a class="nav__phone" href="tel:@@PHONE_TEL@@">@@PHONE_DISPLAY@@</a>
+      <a class="btn btn--primary btn--small" href="contact.html">@@CTA_CONTACT_LABEL@@</a>
+      <button class="nav__toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content">
+  <section class="page-hero" style="padding: 6rem 0;">
+    <div class="container">
+      <span class="breadcrumb">404</span>
+      <h1>We couldn't find that page.</h1>
+      <p>The page you're looking for may have moved. Try @@CATALOG_NAV_LABEL_OR_HOME@@, or get in touch and we'll help you find what you need.</p>
+      <div class="btn-row" style="justify-content:center; margin-top:1.5rem;">
+        <a class="btn btn--primary" href="index.html">Back to Home</a>
+@@FOUROFOUR_SECONDARY_BTN@@
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> @@BUSINESS_NAME@@. All rights reserved.</span>
+      <span>@@CITY@@, @@STATE_FULL@@</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
