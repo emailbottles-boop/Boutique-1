@@ -1,5 +1,15 @@
+# DEMO MODE — this site is a pre-launch demo and is intentionally hidden
+# from search engines until the client approves it going live.
+#
+# TO GO LIVE: delete the two "Disallow: /" lines below, delete the
+# DEMO-NOINDEX meta tags from index/shop/about/contact.html, and update
+# the Sitemap URL to the real domain.
+
 User-agent: *
-Allow: /
+Disallow: /
+
+# --- Settings for when the site goes live (currently overridden above) ---
+# Allow: /
 Disallow: /admin.html
 
 Sitemap: https://www.bridgetsboutiqueenumclaw.com/sitemap.xml
