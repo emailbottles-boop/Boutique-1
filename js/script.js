@@ -5,7 +5,44 @@ document.addEventListener("DOMContentLoaded", () => {
   initActiveLink();
   initHeaderScroll();
   initReveal();
+  initInstagramEmbed();
 });
+
+// Instagram's embed.js pulls in a good chunk of script plus an iframe with its
+// own assets — enough to noticeably slow first paint if it loads with the page.
+// Since the embed sits well below the fold, hold off until the visitor scrolls
+// near it. Most people who bounce off the hero never pay for it at all.
+function initInstagramEmbed() {
+  const embed = document.querySelector(".instagram-media");
+  if (!embed) return;
+
+  let loaded = false;
+  const load = () => {
+    if (loaded) return;
+    loaded = true;
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.instagram.com/embed.js";
+    document.body.appendChild(script);
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    load();
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        load();
+        observer.disconnect();
+      }
+    },
+    // Start fetching a screen early so it's usually ready by the time it's seen.
+    { rootMargin: "600px 0px" }
+  );
+  observer.observe(embed);
+}
 
 function initNav() {
   const toggle = document.querySelector(".nav__toggle");

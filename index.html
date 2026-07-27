@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex, nofollow" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Jost:wght@400;600&display=swap" rel="stylesheet">
 <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="css/style.css" />
 <link rel="canonical" href="https://www.bridgetsboutiqueenumclaw.com/" />
@@ -60,7 +60,7 @@
 <header class="site-header">
   <nav class="nav">
     <a href="index.html" class="nav__brand">
-      <img src="images/logo.svg" alt="" />
+      <img src="images/logo.svg" alt="" width="36" height="36" />
       Bridget's Boutique
     </a>
     <ul class="nav__links">
@@ -90,7 +90,8 @@
 <main id="main-content">
 
   <section class="hero">
-    <img class="hero__bg" src="images/store-display.jpg" alt="" aria-hidden="true" />
+    <img class="hero__bg" src="images/store-display.jpg" alt="" aria-hidden="true"
+         width="704" height="930" fetchpriority="high" decoding="async" />
     <div class="hero__copy">
       <span class="eyebrow">Downtown Enumclaw, WA</span>
       <h1>Women's fashion, hand-picked weekly.</h1>
@@ -146,7 +147,9 @@
   <section class="section section--tight" style="background: var(--color-white);">
     <div class="container split">
       <div class="split__image">
-        <img src="images/storefront.jpg" alt="The Bridget's Boutique storefront on Cole Street in downtown Enumclaw" style="width:100%; min-height:320px; object-fit:cover; border-radius: var(--radius);" />
+        <img src="images/storefront.jpg" alt="The Bridget's Boutique storefront on Cole Street in downtown Enumclaw"
+             width="1200" height="814" loading="lazy" decoding="async"
+             style="width:100%; height:auto; min-height:320px; object-fit:cover; border-radius: var(--radius);" />
       </div>
       <div>
         <span class="eyebrow">Locally Owned</span>
@@ -266,7 +269,9 @@
 
 <script src="js/script.js"></script>
 <script type="module" src="js/products.js"></script>
-<script async src="//www.instagram.com/embed.js"></script>
+<!-- Instagram's embed script is heavy (script + iframe + their own assets).
+     It's loaded only once the embed scrolls near the viewport, so it costs
+     nothing on first paint. See initInstagramEmbed() in js/script.js. -->
 <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
 </body>
 </html>

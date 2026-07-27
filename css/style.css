@@ -154,6 +154,7 @@ img { max-width: 100%; display: block; }
   align-items: center;
   gap: 0.6rem;
   font-family: var(--font-heading);
+  font-weight: 600;
   font-size: 1.3rem;
   letter-spacing: 0.03em;
 }
@@ -317,6 +318,7 @@ img { max-width: 100%; display: block; }
 .hero__stat strong {
   display: block;
   font-family: var(--font-heading);
+  font-weight: 600;
   font-size: 1.7rem;
   color: var(--color-white);
 }
@@ -408,6 +410,7 @@ img { max-width: 100%; display: block; }
 
 .product-card__price {
   font-family: var(--font-heading);
+  font-weight: 600;
   color: var(--color-charcoal-soft);
   margin-bottom: 0.5rem;
 }
@@ -570,6 +573,7 @@ textarea { resize: vertical; min-height: 120px; }
 }
 .footer-brand {
   font-family: var(--font-heading);
+  font-weight: 600;
   font-size: 1.35rem;
   color: var(--color-white);
   margin-bottom: 0.7rem;
