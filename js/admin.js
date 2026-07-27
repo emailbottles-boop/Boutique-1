@@ -69,12 +69,16 @@ function initAuth() {
     e.preventDefault();
     loginError.classList.remove("is-visible");
     resetStatus.classList.remove("is-visible");
-    const email = document.getElementById("login-email").value;
+    const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value;
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      loginError.textContent = "Couldn't log in — check the email and password and try again.";
+      // Report the actual cause. Several of these have nothing to do with the
+      // password, and saying "check your password" for them sends people
+      // chasing the wrong problem.
+      console.error("Login failed:", err.code, err);
+      loginError.textContent = loginErrorMessage(err.code);
       loginError.classList.add("is-visible");
     }
   });
@@ -134,6 +138,32 @@ function initAuth() {
     loadProducts();
     loadInquiries();
   });
+}
+
+// Firebase lumps very different problems into the same failed sign-in. Spell
+// out which one actually happened so setup mistakes aren't mistaken for a
+// forgotten password.
+function loginErrorMessage(code) {
+  switch (code) {
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+    case "auth/user-not-found":
+      return "That email and password don't match an account. Check for typos, or use \"Forgot your password?\" below.";
+    case "auth/invalid-email":
+      return "That doesn't look like a valid email address.";
+    case "auth/unauthorized-domain":
+      return "This website's address isn't authorized in Firebase yet. Add it under Authentication → Settings → Authorized domains. (Nothing is wrong with your password.)";
+    case "auth/operation-not-allowed":
+      return "Email/Password sign-in isn't switched on for this Firebase project. Enable it under Authentication → Sign-in method.";
+    case "auth/too-many-requests":
+      return "Too many failed attempts — Firebase has paused sign-in for a bit. Wait a few minutes and try again.";
+    case "auth/network-request-failed":
+      return "Couldn't reach Firebase. Check your internet connection and try again.";
+    case "auth/user-disabled":
+      return "That account has been disabled in the Firebase Console.";
+    default:
+      return `Couldn't log in (${code || "unknown error"}). Check the browser console for details.`;
+  }
 }
 
 function goToTab(name) {
