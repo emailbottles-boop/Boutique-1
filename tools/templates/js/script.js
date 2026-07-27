@@ -1,4 +1,4 @@
-// Bridget's Boutique — shared site behavior
+// @@BUSINESS_NAME@@ — shared site behavior
 
 document.addEventListener("DOMContentLoaded", () => {
   initNav();

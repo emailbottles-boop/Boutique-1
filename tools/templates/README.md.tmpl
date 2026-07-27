@@ -59,24 +59,41 @@ host or pay for — the site talks to Firebase directly from the browser.
 2. **Firestore Database** → Create database → start in production mode.
 3. **Storage** → Get started (accept the default bucket).
 4. **Authentication** → Sign-in method → enable **Email/Password**. Then go to the
-   **Users** tab → Add user → enter the owner's email and a password. That's their
-   admin login for `/admin.html`.
-5. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
+   **Users** tab → Add user → enter the owner's email and a temporary password
+   (Firebase requires **at least 6 characters**). Copy the new user's **UID** —
+   you'll need it in the next step.
+5. **CRITICAL — grant admin access.** Being able to log in is *not* the same as
+   being allowed to edit the site: the security rules (`firebase/firestore.rules`,
+   `firebase/storage.rules`) only allow writes from UIDs listed in an `admins`
+   collection, and that collection can only be edited from the console (never
+   from the website itself — that's what keeps a random signup from editing
+   your data). In **Firestore Database → Data**, create a collection named
+   `admins`, then add a document whose **Document ID is the user's UID** from
+   step 4 (the document's contents don't matter — an empty document is fine).
+   Skip this and the owner will be able to log in but every save/add/delete will
+   silently fail with a permissions error, and the dashboard will show "No Access".
+6. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
    icon → register an app (nickname doesn't matter, check "Also set up Firebase
    Hosting" if offered) → copy the `firebaseConfig` object it gives you into
    `js/firebase-config.js`, replacing the placeholder values.
-6. **Firestore Database** → **Rules** tab → paste in the contents of
+7. **Firestore Database** → **Rules** tab → paste in the contents of
    `firebase/firestore.rules` → Publish.
-7. **Storage** → **Rules** tab → paste in the contents of `firebase/storage.rules` → Publish.
-8. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
+8. **Storage** → **Rules** tab → paste in the contents of `firebase/storage.rules` → Publish.
+9. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
    same login, so hosting + database + photo storage + admin login are all in one place.
-9. Visit `yoursite.com/admin.html` and log in with the email/password from step 4.
+10. Visit `yoursite.com/admin.html` and log in with the email/temporary password from
+    step 4. On first login, a banner prompts the owner to set their own password —
+    they can do that any time from the **Account** tab (needs their current password
+    and a new one at least 6 characters). If they ever forget it, "Forgot your
+    password?" on the login screen emails them a reset link directly from Firebase.
 
 Once @@CATALOG_ITEM_PLURAL_LOWER@@ are added in the dashboard, they replace the demo listings on the
 public site automatically. `admin.html` is excluded from search engines
 (`robots.txt` + a `noindex` tag) since it's not meant to be publicly discoverable —
 it's still only reachable by whoever has the login, but there's no reason for it
 to show up in search results either.
+
+To add a second admin later (e.g. an employee), repeat steps 4-5 for their account.
 
 ## Replacing photos without Firebase (no code editing required)
 

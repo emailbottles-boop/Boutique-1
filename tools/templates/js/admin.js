@@ -6,6 +6,10 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
   collection,
@@ -13,6 +17,8 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  getDoc,
+  setDoc,
   getDocs,
   query,
   orderBy,
@@ -26,10 +32,12 @@ import {
 
 const notConfiguredEl = document.getElementById("not-configured");
 const loginView = document.getElementById("login-view");
+const deniedView = document.getElementById("denied-view");
 const dashboardView = document.getElementById("dashboard-view");
 const logoutBtn = document.getElementById("logout-btn");
 const userEmailEl = document.getElementById("user-email");
 const toastEl = document.getElementById("toast");
+const passwordBanner = document.getElementById("password-banner");
 
 const DEFAULT_CATEGORY = "@@DEFAULT_CATEGORY_KEY@@";
 
@@ -45,13 +53,24 @@ if (!FIREBASE_CONFIGURED) {
   initAuth();
 }
 
+let tabsReady = false;
+
+function showView(view) {
+  loginView.style.display = view === "login" ? "block" : "none";
+  deniedView.style.display = view === "denied" ? "block" : "none";
+  dashboardView.style.display = view === "dashboard" ? "block" : "none";
+  logoutBtn.style.display = view === "dashboard" ? "inline-flex" : "none";
+}
+
 function initAuth() {
   const loginForm = document.getElementById("login-form");
   const loginError = document.getElementById("login-error");
+  const resetStatus = document.getElementById("reset-status");
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     loginError.classList.remove("is-visible");
+    resetStatus.classList.remove("is-visible");
     const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
     try {
@@ -62,34 +81,155 @@ function initAuth() {
     }
   });
 
-  logoutBtn.addEventListener("click", () => signOut(auth));
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      loginView.style.display = "none";
-      dashboardView.style.display = "block";
-      logoutBtn.style.display = "inline-flex";
-      userEmailEl.textContent = user.email;
-      initTabs();
-      loadProducts();
-      loadInquiries();
-    } else {
-      loginView.style.display = "block";
-      dashboardView.style.display = "none";
-      logoutBtn.style.display = "none";
+  // "Forgot your password?" — Firebase emails a reset link, so the owner
+  // can recover on their own without anyone resetting it for them.
+  document.getElementById("forgot-password-btn").addEventListener("click", async () => {
+    const email = document.getElementById("login-email").value.trim();
+    resetStatus.classList.remove("is-visible", "form-status--success", "form-status--error");
+    if (!email) {
+      resetStatus.textContent = "Type your email address above first, then tap this again.";
+      resetStatus.classList.add("form-status--error", "is-visible");
+      return;
     }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      resetStatus.textContent = `Sent — check ${email} for a link to set a new password.`;
+      resetStatus.classList.add("form-status--success", "is-visible");
+    } catch (err) {
+      console.error(err);
+      resetStatus.textContent = "Couldn't send the reset email — double-check the address.";
+      resetStatus.classList.add("form-status--error", "is-visible");
+    }
+  });
+
+  logoutBtn.addEventListener("click", () => signOut(auth));
+  document.getElementById("denied-logout-btn").addEventListener("click", () => signOut(auth));
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      showView("login");
+      return;
+    }
+
+    // Being signed in is NOT enough — anyone can create an account against
+    // a Firebase project. Only UIDs present in the `admins` collection
+    // (added from the Firebase Console) can manage the site. The security
+    // rules enforce this too; this check just avoids showing a dashboard
+    // where every action would fail.
+    let isAdmin = false;
+    try {
+      const adminDoc = await getDoc(doc(db, "admins", user.uid));
+      isAdmin = adminDoc.exists();
+    } catch (err) {
+      console.error("Couldn't verify admin access:", err);
+    }
+
+    if (!isAdmin) {
+      showView("denied");
+      return;
+    }
+
+    showView("dashboard");
+    userEmailEl.textContent = user.email;
+    initTabs();
+    initAccount(user);
+    loadProducts();
+    loadInquiries();
   });
 }
 
+function goToTab(name) {
+  document.querySelectorAll(".admin-tab").forEach((t) => {
+    t.classList.toggle("is-active", t.dataset.tab === name);
+  });
+  document.querySelectorAll(".admin-panel").forEach((p) => {
+    p.classList.toggle("is-active", p.id === `${name}-panel`);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function initTabs() {
-  const tabs = document.querySelectorAll(".admin-tab");
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      tabs.forEach((t) => t.classList.remove("is-active"));
-      tab.classList.add("is-active");
-      document.querySelectorAll(".admin-panel").forEach((p) => p.classList.remove("is-active"));
-      document.getElementById(`${tab.dataset.tab}-panel`).classList.add("is-active");
-    });
+  if (tabsReady) return;
+  tabsReady = true;
+
+  document.querySelectorAll(".admin-tab").forEach((tab) => {
+    tab.addEventListener("click", () => goToTab(tab.dataset.tab));
+  });
+  document.querySelectorAll("[data-goto-tab]").forEach((el) => {
+    el.addEventListener("click", () => goToTab(el.dataset.gotoTab));
+  });
+}
+
+// ---------- Account / password ----------
+
+async function initAccount(user) {
+  // Nudge the owner to replace the temporary password they were handed,
+  // until they've actually changed it once.
+  try {
+    const profile = await getDoc(doc(db, "adminProfile", user.uid));
+    if (!profile.exists() || !profile.data().passwordChangedAt) {
+      passwordBanner.style.display = "block";
+    } else {
+      passwordBanner.style.display = "none";
+    }
+  } catch (err) {
+    console.error("Couldn't read admin profile:", err);
+  }
+
+  const form = document.getElementById("password-form");
+  if (form.dataset.ready) return;
+  form.dataset.ready = "true";
+
+  const status = document.getElementById("password-status");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const current = document.getElementById("current-password").value;
+    const next = document.getElementById("new-password").value;
+    const confirm = document.getElementById("confirm-password").value;
+
+    status.classList.remove("is-visible", "form-status--success", "form-status--error");
+
+    function fail(message) {
+      status.textContent = message;
+      status.classList.add("form-status--error", "is-visible");
+    }
+
+    if (next !== confirm) return fail("The two new passwords don't match.");
+    if (next.length < 6) return fail("Your new password needs to be at least 6 characters.");
+    if (next === current) return fail("That's the same as your current password — pick a new one.");
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Updating…";
+
+    try {
+      // Firebase requires a recent login before changing a password.
+      const credential = EmailAuthProvider.credential(user.email, current);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, next);
+      await setDoc(
+        doc(db, "adminProfile", user.uid),
+        { passwordChangedAt: serverTimestamp() },
+        { merge: true }
+      );
+      form.reset();
+      passwordBanner.style.display = "none";
+      status.textContent = "Password updated. Use the new one next time you log in.";
+      status.classList.add("form-status--success", "is-visible");
+    } catch (err) {
+      console.error(err);
+      if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+        fail("That current password isn't right.");
+      } else if (err.code === "auth/weak-password") {
+        fail("That new password is too weak — try a longer one.");
+      } else {
+        fail("Couldn't update the password — try again.");
+      }
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Update Password";
+    }
   });
 }
 
