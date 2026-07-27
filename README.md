@@ -61,24 +61,57 @@ host or pay for — the site talks to Firebase directly from the browser.
 2. **Firestore Database** → Create database → start in production mode.
 3. **Storage** → Get started (accept the default bucket).
 4. **Authentication** → Sign-in method → enable **Email/Password**. Then go to the
-   **Users** tab → Add user → enter the owner's email and a password. That's their
-   admin login for `/admin.html`.
-5. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
+   **Users** tab → Add user → enter the owner's email address and a **temporary
+   password** (Firebase requires at least 6 characters — e.g. `Boutique2026!`).
+   Copy the **User UID** it generates; you need it in the next step.
+5. **Firestore Database** → Start collection → collection ID `admins` → Document ID
+   = the **User UID** from step 4 → add any field you like (e.g. `note` = `owner`)
+   → Save. **This step is what actually grants access** — see the security note below.
+6. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
    icon → register an app (nickname doesn't matter, check "Also set up Firebase
    Hosting" if offered) → copy the `firebaseConfig` object it gives you into
    `js/firebase-config.js`, replacing the placeholder values.
-6. **Firestore Database** → **Rules** tab → paste in the contents of
+7. **Firestore Database** → **Rules** tab → paste in the contents of
    `firebase/firestore.rules` → Publish.
-7. **Storage** → **Rules** tab → paste in the contents of `firebase/storage.rules` → Publish.
-8. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
+8. **Storage** → **Rules** tab → paste in the contents of `firebase/storage.rules` → Publish.
+9. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
    same login, so hosting + database + photo storage + admin login are all in one place.
-9. Visit `yoursite.com/admin.html` and log in with the email/password from step 4.
+10. Visit `yoursite.com/admin.html` and log in with the email + temporary password
+    from step 4. The dashboard shows a banner prompting the owner to set their own
+    password under the **Account** tab — after that, only they know it.
 
 Once products are added in the dashboard, they replace the demo listings on the
-public site automatically. `admin.html` is excluded from search engines
-(`robots.txt` + a `noindex` tag) since it's not meant to be publicly discoverable —
-it's still only reachable by whoever has the login, but there's no reason for it
-to show up in search results either.
+public site automatically.
+
+### Security: why step 5 matters
+
+Firebase's Email/Password sign-in lets **anyone** create an account against the
+project — the API key in `firebase-config.js` is public by design and can't be
+hidden. So "is this user logged in?" is not a safe permission check on its own.
+
+The security rules therefore require the user's UID to exist in the `admins`
+Firestore collection, and those documents can only be created from the Firebase
+Console (the rules forbid writing them from the website). A stranger who signs
+themselves up lands on a "No Access" screen and can't read inquiries or change
+anything.
+
+**If you skip step 5, nobody — including the owner — can edit the site.** If you
+were to loosen the rules to `request.auth != null` instead, anyone on the internet
+could sign up and take over the site. Don't.
+
+Other protections already in place:
+- Product photo uploads are limited to real image files under 10 MB.
+- Contact form submissions are shape- and length-checked, so the form can't be
+  used to dump arbitrary data into the database.
+- Everything outside `product-photos/` in Storage is unreachable from the website.
+- `admin.html` is excluded from search engines (`robots.txt` + a `noindex` tag).
+- The owner can self-recover with "Forgot your password?" on the login screen —
+  Firebase emails them a reset link, so you never need to hold their password.
+
+### Adding another admin later
+
+Repeat steps 4–5 for the new person: create their user in Authentication, then add
+their UID as a document in the `admins` collection.
 
 ## Replacing photos without Firebase (no code editing required)
 

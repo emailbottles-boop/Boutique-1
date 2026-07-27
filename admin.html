@@ -38,7 +38,7 @@
 
   <div id="login-view" class="admin-login" style="display:none;">
     <h1>Admin Login</h1>
-    <p>Log in with the account created for you in Firebase Authentication.</p>
+    <p>Log in with the email and password set up for your shop.</p>
     <form id="login-form">
       <div>
         <label for="login-email">Email</label>
@@ -51,9 +51,28 @@
       <button type="submit" class="btn btn--primary btn--block">Log In</button>
       <p id="login-error" class="form-status form-status--error"></p>
     </form>
+    <button id="forgot-password-btn" class="admin-link-btn">Forgot your password?</button>
+    <p id="reset-status" class="form-status"></p>
+  </div>
+
+  <div id="denied-view" class="admin-login" style="display:none;">
+    <h1>No Access</h1>
+    <p>
+      That account is signed in, but it isn't authorized to manage this site.
+      If this should be your account, the site owner needs to add you as an
+      admin in the Firebase Console.
+    </p>
+    <button id="denied-logout-btn" class="btn btn--primary btn--block">Sign Out</button>
   </div>
 
   <div id="dashboard-view" class="admin-shell" style="display:none;">
+    <div id="password-banner" class="admin-banner" style="display:none;">
+      <strong>Set your own password.</strong>
+      You're still using the temporary password you were given. Open the
+      <button class="admin-link-btn" data-goto-tab="account">Account</button>
+      tab to choose your own — nobody else will know it.
+    </div>
+
     <div class="admin-header">
       <h1>Dashboard</h1>
       <span id="user-email" style="font-size:0.85rem; color:var(--color-charcoal-soft);"></span>
@@ -62,6 +81,7 @@
     <div class="admin-tabs">
       <button class="admin-tab is-active" data-tab="products">Products</button>
       <button class="admin-tab" data-tab="inquiries">Inquiries <span id="inquiry-count-badge"></span></button>
+      <button class="admin-tab" data-tab="account">Account</button>
     </div>
 
     <section id="products-panel" class="admin-panel is-active">
@@ -108,6 +128,31 @@
 
     <section id="inquiries-panel" class="admin-panel">
       <div id="inquiries-list"></div>
+    </section>
+
+    <section id="account-panel" class="admin-panel">
+      <div class="admin-card">
+        <h3 style="margin-bottom:0.4rem;">Change Your Password</h3>
+        <p style="font-size:0.88rem; color:var(--color-charcoal-soft); margin-bottom:1.2rem;">
+          Pick something only you know. It must be at least 6 characters.
+        </p>
+        <form id="password-form" style="display:grid; gap:1rem; max-width:420px;">
+          <div>
+            <label for="current-password">Current Password</label>
+            <input type="password" id="current-password" required autocomplete="current-password" />
+          </div>
+          <div>
+            <label for="new-password">New Password</label>
+            <input type="password" id="new-password" required minlength="6" autocomplete="new-password" />
+          </div>
+          <div>
+            <label for="confirm-password">Confirm New Password</label>
+            <input type="password" id="confirm-password" required minlength="6" autocomplete="new-password" />
+          </div>
+          <button type="submit" class="btn btn--primary">Update Password</button>
+          <p id="password-status" class="form-status"></p>
+        </form>
+      </div>
     </section>
   </div>
 </main>
