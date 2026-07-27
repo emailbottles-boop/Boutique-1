@@ -26,6 +26,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { compressImageToDataUrl } from "./image-utils.js";
 import { loadSiteImages } from "./site-images.js";
+import { STARTER_ITEMS, HOME_PREVIEW_COUNT } from "./starter-items.js";
 
 const notConfiguredEl = document.getElementById("not-configured");
 const loginView = document.getElementById("login-view");
@@ -370,29 +371,85 @@ function buildSiteSlot(slot, savedUrl) {
 // the thing, instead of translating between a form and the real page.
 
 async function loadProducts() {
-  const list = document.getElementById("products-list");
-  list.innerHTML = `<p class="admin-empty">Loading…</p>`;
+  const featuredHost = document.getElementById("featured-slots");
+  const moreHost = document.getElementById("more-slots");
+  featuredHost.innerHTML = `<p class="admin-empty">Loading…</p>`;
+  moreHost.innerHTML = "";
 
   let docs = [];
   try {
-    const snap = await getDocs(query(collection(db, "products"), orderBy("sortOrder")));
-    docs = snap.docs;
+    docs = (await getDocs(query(collection(db, "products"), orderBy("sortOrder")))).docs;
+
+    // The public site falls back to a built-in starter list when the database
+    // is empty — which meant the site showed four items the dashboard knew
+    // nothing about, and they couldn't be edited. Seed those same items once
+    // so the two always agree.
+    if (docs.length === 0 && !(await hasBeenSeeded())) {
+      await seedStarterItems();
+      docs = (await getDocs(query(collection(db, "products"), orderBy("sortOrder")))).docs;
+    }
   } catch (err) {
     console.error("Couldn't load products:", err);
-    list.innerHTML = `<p class="admin-empty">Couldn't load your items. Reload the page to try again.</p>`;
+    featuredHost.innerHTML = `<p class="admin-empty">Couldn't load your items. Reload the page to try again.</p>`;
     return;
   }
 
-  list.innerHTML = "";
-  docs.forEach((d) => list.appendChild(renderProductCard(d.id, d.data())));
-  list.appendChild(renderAddCard());
+  const items = docs.map((d) => ({ id: d.id, data: d.data() }));
+  const featured = items.slice(0, HOME_PREVIEW_COUNT);
+  const rest = items.slice(HOME_PREVIEW_COUNT);
+
+  // Always draw all four home-page positions, so an empty one reads as a
+  // slot waiting to be filled rather than as nothing at all.
+  featuredHost.innerHTML = "";
+  for (let i = 0; i < HOME_PREVIEW_COUNT; i++) {
+    featuredHost.appendChild(
+      featured[i]
+        ? renderProductCard(featured[i].id, featured[i].data)
+        : renderAddCard(`Add item ${i + 1}`)
+    );
+  }
+
+  moreHost.innerHTML = "";
+  rest.forEach((item) => moreHost.appendChild(renderProductCard(item.id, item.data)));
+  moreHost.appendChild(renderAddCard("Add another item"));
 }
 
-function renderAddCard() {
+async function hasBeenSeeded() {
+  try {
+    const snap = await getDoc(doc(db, "site", "config"));
+    return snap.exists() && snap.data().seeded === true;
+  } catch (err) {
+    // If we can't tell, don't seed — better to show an empty dashboard than
+    // to keep re-creating items the owner deliberately deleted.
+    console.warn("Couldn't check seed state:", err);
+    return true;
+  }
+}
+
+async function seedStarterItems() {
+  try {
+    const base = Date.now();
+    await Promise.all(
+      STARTER_ITEMS.map((item, i) =>
+        addDoc(collection(db, "products"), {
+          ...item,
+          sortOrder: base + i,
+          createdAt: serverTimestamp(),
+        })
+      )
+    );
+    await setDoc(doc(db, "site", "config"), { seeded: true }, { merge: true });
+    showToast("Loaded the items currently on your site.");
+  } catch (err) {
+    console.error("Couldn't seed starter items:", err);
+  }
+}
+
+function renderAddCard(label = "Add an item") {
   const card = document.createElement("button");
   card.type = "button";
   card.className = "admin-add-card";
-  card.innerHTML = `<span class="admin-add-card__plus">+</span><span>Add an item</span>`;
+  card.innerHTML = `<span class="admin-add-card__plus">+</span><span>${label}</span>`;
 
   card.addEventListener("click", async () => {
     card.disabled = true;
@@ -434,6 +491,13 @@ function renderProductCard(id, product) {
   if (product.photoUrl) {
     img.src = product.photoUrl;
     img.alt = product.name || "";
+    // If the file behind that URL has gone missing, fall back to the empty
+    // state instead of showing a broken-image icon.
+    img.addEventListener("error", () => {
+      img.remove();
+      photoLabel.classList.add("is-empty");
+      photoLabel.prepend(empty);
+    }, { once: true });
     photoLabel.appendChild(img);
   } else {
     // The empty state already reads "tap to add a photo", so the overlay

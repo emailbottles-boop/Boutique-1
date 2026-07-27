@@ -16,15 +16,9 @@
 // network — this whole module fails to load and the showcase renders empty.
 // Loading it lazily lets the demo items below display no matter what.
 
-// How many items the homepage previews before "see everything in the shop".
-const HOME_PREVIEW_COUNT = 4;
+import { STARTER_ITEMS, HOME_PREVIEW_COUNT } from "./starter-items.js";
 
-const FALLBACK_PRODUCTS = [
-  { id: "p1", name: "Floral Wrap Dress",     price: "$68", tag: "Example", photoUrl: "images/product-1.jpg" },
-  { id: "p2", name: "Red Skinny Jeans",      price: "$54", tag: "Example", photoUrl: "images/product-5.jpg" },
-  { id: "p3", name: "Cropped Denim Jacket",  price: "$74", tag: null,      photoUrl: "images/product-2.jpg" },
-  { id: "p4", name: "Suede Crossbody Bag",   price: "$58", tag: null,      photoUrl: "images/product-3.jpg" },
-];
+const FALLBACK_PRODUCTS = STARTER_ITEMS.map((item, i) => ({ id: `starter-${i}`, ...item }));
 
 async function loadProducts() {
   try {
