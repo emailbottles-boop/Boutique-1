@@ -371,8 +371,17 @@ img { max-width: 100%; display: block; }
   gap: 1.75rem;
 }
 .grid--3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-.grid--4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .grid--2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+/* auto-FILL, not auto-fit. auto-fit collapses the empty tracks, so a single
+   product would stretch across the whole container and render a card taller
+   than the viewport. auto-fill keeps the columns, so one item stays the size
+   of one item. */
+.grid--4 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+
+/* Belt and braces: even if a grid somewhere gives a card a full-width track,
+   a product card should never blow up past a sensible card size. */
+.product-card { max-width: 340px; }
 
 /* Product card */
 .product-card {
