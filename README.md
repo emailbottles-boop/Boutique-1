@@ -108,6 +108,34 @@ Other protections already in place:
 - The owner can self-recover with "Forgot your password?" on the login screen —
   Firebase emails them a reset link, so you never need to hold their password.
 
+### How the admin password is protected
+
+Passwords are handled entirely by Firebase Authentication — they are never stored
+in this repo, in the database, or anywhere in the site's code.
+
+- Google hashes them with **scrypt** (a memory-hard algorithm, deliberately slow
+  and expensive to brute-force). Plaintext passwords are never stored.
+- **Nobody can look the password up — not even you as project owner.** The Firebase
+  Console shows a user's email and UID, never their password. The only available
+  action is to trigger a reset.
+- Logins travel over HTTPS, and Firebase rate-limits repeated failed attempts.
+- The `firebaseConfig` values in `js/firebase-config.js` are *not* credentials —
+  they identify which project to talk to. Access is controlled by the security
+  rules and the `admins` allowlist.
+
+**Where the real risk actually is** — not the hashing, but the handoff:
+
+1. **The temporary password is sent in plain text** over email or SMS when you hand
+   it to the owner. That message is the weakest link. This is exactly why the
+   dashboard nags them to change it on first login — once they do, the password in
+   that email is dead, and nobody (including you) knows the real one.
+2. **A weak password** is still guessable no matter how well it's hashed. Encourage
+   something that isn't the business name plus a year.
+3. **A committed service account key** would bypass all of the above. See
+   `.gitignore` — those filenames are blocked from being committed. If one ever
+   does get committed, revoke it in Project settings → Service accounts
+   immediately; removing it in a later commit does *not* remove it from git history.
+
 ### Adding another admin later
 
 Repeat steps 4–5 for the new person: create their user in Authentication, then add

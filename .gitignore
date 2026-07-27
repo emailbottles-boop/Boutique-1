@@ -1,0 +1,49 @@
+# --- NEVER COMMIT THESE ---
+#
+# Firebase service account keys grant FULL admin access to the project:
+# reading every customer inquiry, deleting all data, running up billing.
+# Automated bots scan public GitHub repos for exactly these filenames.
+#
+# If one is ever committed by accident, deleting it in a later commit is
+# NOT enough — it stays in git history. Revoke the key immediately in
+# Firebase Console > Project settings > Service accounts.
+
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+firebase-adminsdk*.json
+service-account*.json
+*.pem
+*.p12
+*.key
+
+# Environment / secret files
+.env
+.env.*
+!.env.example
+secrets.json
+credentials.json
+
+# Firebase CLI local state
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+firestore-debug.log
+database-debug.log
+
+# Generated sites from tools/generate_site.py (keep the generator, not its output)
+/generated/
+/out/
+
+# Dependencies & tooling
+node_modules/
+package-lock.json
+__pycache__/
+*.pyc
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
