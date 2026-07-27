@@ -68,10 +68,10 @@ service cloud.firestore {
     }
 
     // The page photos that aren't product items (hero, storefront). Public
-    // site reads them; only an allowlisted admin can change them. Same
-    // size guard as products, since these are stored as compressed data
-    // URLs rather than in Firebase Storage.
-    match /site/{docId} {
+    // site reads them; only an allowlisted admin can change them. Same size
+    // guard as products, since these are stored as compressed data URLs
+    // rather than in Firebase Storage.
+    match /site/images {
       allow read: if true;
       allow write: if isAdmin()
         && request.resource.data.keys().hasOnly(['hero', 'storefront', 'updatedAt'])
@@ -81,6 +81,15 @@ service cloud.firestore {
         && (!('storefront' in request.resource.data)
             || request.resource.data.storefront == null
             || request.resource.data.storefront.size() < 900000);
+    }
+
+    // Dashboard bookkeeping — currently just a flag recording that the
+    // starter items were seeded once, so deleting them all doesn't cause
+    // them to reappear on the next login.
+    match /site/config {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['seeded']);
     }
   }
 }
