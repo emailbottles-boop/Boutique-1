@@ -74,117 +74,195 @@
   margin-bottom: 1.25rem;
 }
 
-/* Product card: compact photo+name+price "head", then secondary fields,
-   then full-width stacked action buttons — designed mobile-first since
-   this is the view most owners will use from their phone in-store. */
+/* ---- Live preview product editor ----
+   These cards deliberately mirror .product-card on the public site, so the
+   owner is editing something that looks like what visitors see. Edit
+   affordances (camera overlay, focus underlines) sit on top of that. */
 
-.admin-product-card { padding: 1.1rem; }
-
-.admin-product-head {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  margin-bottom: 1rem;
-}
-
-.admin-product-thumb {
-  position: relative;
-  width: 68px;
-  height: 68px;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--color-cream-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  cursor: pointer;
-  border: 1px dashed rgba(43,37,35,0.25);
-}
-.admin-product-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.admin-product-thumb span { font-size: 0.6rem; color: var(--color-charcoal-soft); text-align: center; padding: 0 4px; line-height: 1.2; }
-.admin-product-thumb input[type="file"] { display: none; }
-.admin-product-thumb__badge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--color-charcoal);
-  color: var(--color-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  border: 2px solid var(--color-white);
-}
-
-.admin-product-head__text { flex: 1; min-width: 0; }
-.admin-product-head__text input {
-  border: none;
-  background: transparent;
-  padding: 0.15rem 0;
-  width: 100%;
-}
-.admin-product-head__text .f-name {
-  font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-bottom: 1px solid transparent;
-}
-.admin-product-head__text .f-price {
-  font-size: 0.95rem;
+.admin-hint {
+  font-size: 0.9rem;
   color: var(--color-charcoal-soft);
-  border-bottom: 1px solid transparent;
+  background: var(--color-white);
+  border-left: 3px solid var(--color-gold);
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1.75rem;
+  line-height: 1.5;
 }
-.admin-product-head__text input:focus {
+
+.admin-preview-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.admin-preview-card {
+  position: relative;
+  background: var(--color-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease;
+}
+.admin-preview-card.is-dirty {
+  box-shadow: 0 0 0 2px var(--color-gold), var(--shadow);
+}
+
+/* photo */
+.admin-preview-photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  background: var(--color-cream-dark);
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.admin-preview-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.admin-preview-photo input[type="file"] { display: none; }
+
+.admin-preview-photo__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.82rem;
+  color: var(--color-charcoal-soft);
+  border: 1px dashed rgba(43, 37, 35, 0.28);
+  margin: 0.6rem;
+  border-radius: var(--radius);
+}
+
+/* Always visible rather than hover-only — there is no hover on a phone,
+   which is where most of this editing will happen. */
+.admin-preview-photo__overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.5rem;
+  background: rgba(43, 37, 35, 0.78);
+  color: var(--color-white);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+}
+.admin-preview-photo:hover .admin-preview-photo__overlay { background: var(--color-charcoal); }
+.admin-preview-photo.is-empty .admin-preview-photo__overlay { display: none; }
+.admin-preview-photo__overlay svg {
+  width: 15px; height: 15px;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* text fields — look like text, behave like inputs */
+.admin-preview-body {
+  padding: 1rem 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+}
+.admin-preview-body input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  padding: 0.2rem 0;
+  border-radius: 0;
+  font-family: inherit;
+}
+.admin-preview-body input:hover { border-bottom-color: rgba(43, 37, 35, 0.18); }
+.admin-preview-body input:focus {
   outline: none;
   border-bottom-color: var(--color-gold);
 }
+.admin-preview-body input::placeholder { color: rgba(43, 37, 35, 0.35); }
 
-.admin-fields {
-  display: grid;
-  gap: 0.7rem;
-  grid-template-columns: 1fr;
-  margin-bottom: 1rem;
+.admin-preview-tag {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gold);
 }
-@media (min-width: 560px) {
-  .admin-fields { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.admin-preview-name {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--color-charcoal);
 }
-.admin-fields label { margin-bottom: 0.25rem; }
-.admin-fields input,
-.admin-fields select {
-  padding: 0.6rem 0.7rem;
-  font-size: 0.92rem;
+.admin-preview-price {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.98rem;
+  color: var(--color-charcoal-soft);
 }
 
-.admin-product-actions {
+.admin-preview-actions {
+  padding: 0 1.1rem 1.1rem;
+  margin-top: auto;
+}
+.admin-preview-save { width: 100%; }
+.admin-preview-save:disabled { opacity: 0.4; cursor: default; }
+
+.admin-preview-delete {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-charcoal);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(43, 37, 35, 0.28);
+}
+.admin-preview-delete:hover { background: #c0392b; color: #fff; }
+
+/* "add an item" tile, sitting in the grid like another card */
+.admin-add-card {
+  min-height: 260px;
+  border: 2px dashed rgba(43, 37, 35, 0.25);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-charcoal-soft);
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-}
-@media (min-width: 560px) {
-  .admin-product-actions { flex-direction: row; }
-}
-.admin-product-actions .btn { flex: 1; }
-
-.admin-file-label {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-gold);
-  cursor: pointer;
-  border: 1px solid var(--color-gold);
-  padding: 0.62rem 1rem;
-  border-radius: 999px;
-  text-align: center;
-  flex: 1;
+  gap: 0.5rem;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
-.admin-file-label input { display: none; }
+.admin-add-card:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  background: rgba(176, 141, 87, 0.05);
+}
+.admin-add-card:disabled { opacity: 0.5; cursor: default; }
+.admin-add-card__plus {
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 300;
+}
 
 .admin-empty {
   text-align: center;

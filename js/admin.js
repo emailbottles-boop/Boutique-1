@@ -261,183 +261,223 @@ async function initAccount(user) {
   });
 }
 
-// ---------- Products ----------
+// ---------- Products (live preview editor) ----------
+//
+// The products tab renders the same cards the public site shows, with the
+// editing controls built into them: tap the photo to swap it, type over the
+// name or price. The idea is that the owner edits the thing that looks like
+// the thing, instead of translating between a form and the real page.
 
 async function loadProducts() {
   const list = document.getElementById("products-list");
   list.innerHTML = `<p class="admin-empty">Loading…</p>`;
 
-  const q = query(collection(db, "products"), orderBy("sortOrder"));
-  const snap = await getDocs(q);
-
-  if (snap.empty) {
-    list.innerHTML = `<p class="admin-empty">No products yet — add your first one above.</p>`;
+  let docs = [];
+  try {
+    const snap = await getDocs(query(collection(db, "products"), orderBy("sortOrder")));
+    docs = snap.docs;
+  } catch (err) {
+    console.error("Couldn't load products:", err);
+    list.innerHTML = `<p class="admin-empty">Couldn't load your items. Reload the page to try again.</p>`;
     return;
   }
 
   list.innerHTML = "";
-  snap.forEach((docSnap) => {
-    list.appendChild(renderProductRow(docSnap.id, docSnap.data()));
-  });
+  docs.forEach((d) => list.appendChild(renderProductCard(d.id, d.data())));
+  list.appendChild(renderAddCard());
 }
 
-function renderProductRow(id, product) {
-  const card = document.createElement("div");
-  card.className = "admin-card admin-product-card";
+function renderAddCard() {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "admin-add-card";
+  card.innerHTML = `<span class="admin-add-card__plus">+</span><span>Add an item</span>`;
 
-  // Tappable photo thumbnail — tap it to pick a new photo, same as tapping
-  // an avatar in most phone apps. A small pencil badge hints it's tappable.
-  const thumbLabel = document.createElement("label");
-  thumbLabel.className = "admin-product-thumb";
-  thumbLabel.title = "Tap to change photo";
-  const thumbImg = document.createElement("img");
-  const thumbPlaceholder = document.createElement("span");
-  thumbPlaceholder.textContent = "Add Photo";
-  if (product.photoUrl) {
-    thumbImg.src = product.photoUrl;
-    thumbImg.alt = product.name;
-    thumbLabel.appendChild(thumbImg);
-  } else {
-    thumbLabel.appendChild(thumbPlaceholder);
-  }
-  const badge = document.createElement("span");
-  badge.className = "admin-product-thumb__badge";
-  badge.textContent = "✎";
-  thumbLabel.appendChild(badge);
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
-  fileInput.accept = "image/*";
-  thumbLabel.appendChild(fileInput);
-
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    thumbLabel.innerHTML = "";
-    const preview = document.createElement("img");
-    preview.src = URL.createObjectURL(file);
-    thumbLabel.append(preview, badge, fileInput);
-  });
-
-  const nameInput = document.createElement("input");
-  nameInput.type = "text";
-  nameInput.className = "f-name";
-  nameInput.value = product.name || "";
-  nameInput.setAttribute("aria-label", "Product name");
-
-  const priceInput = document.createElement("input");
-  priceInput.type = "text";
-  priceInput.className = "f-price";
-  priceInput.value = product.price || "";
-  priceInput.setAttribute("aria-label", "Price");
-
-  const headText = document.createElement("div");
-  headText.className = "admin-product-head__text";
-  headText.append(nameInput, priceInput);
-
-  const head = document.createElement("div");
-  head.className = "admin-product-head";
-  head.append(thumbLabel, headText);
-
-  const fields = document.createElement("div");
-  fields.className = "admin-fields";
-  fields.innerHTML = `
-    <div>
-      <label>Tag (optional)</label>
-      <input type="text" class="f-tag" placeholder="e.g. New" value="${escapeAttr(product.tag || "")}" />
-    </div>
-  `;
-
-  const actions = document.createElement("div");
-  actions.className = "admin-product-actions";
-
-  const saveBtn = document.createElement("button");
-  saveBtn.className = "btn btn--primary btn--small";
-  saveBtn.textContent = "Save Changes";
-
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "btn btn--outline btn--small";
-  deleteBtn.textContent = "Delete";
-
-  actions.append(saveBtn, deleteBtn);
-  card.append(head, fields, actions);
-
-  saveBtn.addEventListener("click", async () => {
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Saving…";
+  card.addEventListener("click", async () => {
+    card.disabled = true;
     try {
-      let photoUrl = product.photoUrl || null;
-      if (fileInput.files[0]) {
-        photoUrl = await prepareProductPhoto(fileInput.files[0]);
-      }
-      await updateDoc(doc(db, "products", id), {
-        name: nameInput.value,
-        price: priceInput.value,
-        tag: fields.querySelector(".f-tag").value || null,
-        photoUrl,
+      await addDoc(collection(db, "products"), {
+        name: "New item",
+        price: "",
+        tag: null,
+        photoUrl: null,
+        sortOrder: Date.now(),
+        createdAt: serverTimestamp(),
       });
-      product.photoUrl = photoUrl;
-      showToast("Saved.");
+      showToast("Item added — now add a photo and a name.");
+      loadProducts();
     } catch (err) {
       console.error(err);
-      showToast("Couldn't save that change — try again.");
-    } finally {
-      saveBtn.disabled = false;
-      saveBtn.textContent = "Save Changes";
+      showToast("Couldn't add that item — try again.");
+      card.disabled = false;
     }
-  });
-
-  deleteBtn.addEventListener("click", async () => {
-    if (!confirm(`Delete "${product.name}"? This can't be undone.`)) return;
-    await deleteDoc(doc(db, "products", id));
-    card.remove();
-    showToast("Product deleted.");
   });
 
   return card;
 }
 
-// Photos are compressed in the browser and saved straight into the product's
-// Firestore document, so no Firebase Storage (and therefore no billing
-// account) is needed. See js/image-utils.js.
-async function prepareProductPhoto(file) {
-  return compressImageToDataUrl(file);
+function renderProductCard(id, product) {
+  const card = document.createElement("div");
+  card.className = "admin-preview-card";
+
+  // --- photo, tappable to replace ---
+  const photoLabel = document.createElement("label");
+  photoLabel.className = "admin-preview-photo";
+  photoLabel.title = "Tap to change this photo";
+
+  const img = document.createElement("img");
+  const empty = document.createElement("span");
+  empty.className = "admin-preview-photo__empty";
+  empty.textContent = "Tap to add a photo";
+
+  if (product.photoUrl) {
+    img.src = product.photoUrl;
+    img.alt = product.name || "";
+    photoLabel.appendChild(img);
+  } else {
+    // The empty state already reads "tap to add a photo", so the overlay
+    // would just repeat it.
+    photoLabel.classList.add("is-empty");
+    photoLabel.appendChild(empty);
+  }
+
+  const overlay = document.createElement("span");
+  overlay.className = "admin-preview-photo__overlay";
+  overlay.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+    Change photo`;
+  photoLabel.appendChild(overlay);
+
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  photoLabel.appendChild(fileInput);
+
+  // --- text fields, styled to read like the live card ---
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "admin-preview-name";
+  nameInput.value = product.name || "";
+  nameInput.placeholder = "Item name";
+  nameInput.setAttribute("aria-label", "Item name");
+
+  const priceInput = document.createElement("input");
+  priceInput.type = "text";
+  priceInput.className = "admin-preview-price";
+  priceInput.value = product.price || "";
+  priceInput.placeholder = "$0";
+  priceInput.setAttribute("aria-label", "Price");
+
+  const tagInput = document.createElement("input");
+  tagInput.type = "text";
+  tagInput.className = "admin-preview-tag";
+  tagInput.value = product.tag || "";
+  tagInput.placeholder = "Add a label (optional)";
+  tagInput.setAttribute("aria-label", "Label, for example New");
+
+  const body = document.createElement("div");
+  body.className = "admin-preview-body";
+  body.append(tagInput, nameInput, priceInput);
+
+  // --- actions ---
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.className = "btn btn--primary btn--small admin-preview-save";
+  saveBtn.textContent = "Save";
+  saveBtn.disabled = true;
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "admin-preview-delete";
+  deleteBtn.title = "Remove this item";
+  deleteBtn.setAttribute("aria-label", `Remove ${product.name || "this item"}`);
+  deleteBtn.innerHTML = "&times;";
+
+  const actions = document.createElement("div");
+  actions.className = "admin-preview-actions";
+  actions.appendChild(saveBtn);
+
+  card.append(deleteBtn, photoLabel, body, actions);
+
+  // Save only lights up once something actually changed, so it's obvious
+  // whether there's unsaved work on the card.
+  let pendingPhoto = null;
+  const markDirty = () => {
+    saveBtn.disabled = false;
+    card.classList.add("is-dirty");
+  };
+  [nameInput, priceInput, tagInput].forEach((el) => el.addEventListener("input", markDirty));
+
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    try {
+      // Compress immediately so the preview shows exactly what will be saved.
+      pendingPhoto = await compressImageToDataUrl(file);
+      img.src = pendingPhoto;
+      img.alt = nameInput.value;
+      if (!img.isConnected) {
+        empty.remove();
+        photoLabel.classList.remove("is-empty");
+        photoLabel.prepend(img);
+      }
+      markDirty();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Couldn't read that photo.");
+    }
+  });
+
+  saveBtn.addEventListener("click", async () => {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
+    try {
+      const update = {
+        name: nameInput.value.trim(),
+        price: priceInput.value.trim(),
+        tag: tagInput.value.trim() || null,
+      };
+      if (pendingPhoto) update.photoUrl = pendingPhoto;
+
+      await updateDoc(doc(db, "products", id), update);
+      if (pendingPhoto) {
+        product.photoUrl = pendingPhoto;
+        pendingPhoto = null;
+      }
+      card.classList.remove("is-dirty");
+      saveBtn.textContent = "Saved";
+      showToast("Saved — it's live on the site now.");
+      setTimeout(() => {
+        saveBtn.textContent = "Save";
+        saveBtn.disabled = true;
+      }, 1400);
+    } catch (err) {
+      console.error(err);
+      showToast("Couldn't save that — try again.");
+      saveBtn.textContent = "Save";
+      saveBtn.disabled = false;
+    }
+  });
+
+  deleteBtn.addEventListener("click", async () => {
+    const label = nameInput.value.trim() || "this item";
+    if (!confirm(`Remove ${label} from your site?`)) return;
+    try {
+      await deleteDoc(doc(db, "products", id));
+      card.remove();
+      showToast("Removed.");
+    } catch (err) {
+      console.error(err);
+      showToast("Couldn't remove that — try again.");
+    }
+  });
+
+  return card;
 }
 
-document.getElementById("new-product-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-
-  try {
-    const name = document.getElementById("new-name").value;
-    const price = document.getElementById("new-price").value;
-    const tag = document.getElementById("new-tag").value || null;
-    const file = document.getElementById("new-photo").files[0];
-
-    const docRef = await addDoc(collection(db, "products"), {
-      name,
-      price,
-      tag,
-      photoUrl: null,
-      sortOrder: Date.now(),
-      createdAt: serverTimestamp(),
-    });
-
-    if (file) {
-      const photoUrl = await prepareProductPhoto(file);
-      await updateDoc(doc(db, "products", docRef.id), { photoUrl });
-    }
-
-    e.target.reset();
-    showToast("Product added.");
-    loadProducts();
-  } catch (err) {
-    console.error(err);
-    showToast("Couldn't add that product — try again.");
-  } finally {
-    submitBtn.disabled = false;
-  }
-});
 
 // ---------- Inquiries ----------
 
