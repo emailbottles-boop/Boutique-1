@@ -382,7 +382,13 @@ img { max-width: 100%; display: block; }
   flex-direction: column;
 }
 
-.product-card__image { aspect-ratio: 4 / 5; }
+/* flex-shrink:0 keeps the image at its 4:5 ratio instead of being squeezed
+   when a neighbouring card in the same grid row is taller. */
+.product-card__image {
+  aspect-ratio: 4 / 5;
+  flex-shrink: 0;
+  overflow: hidden;
+}
 .product-card__image .placeholder-img { min-height: 0; height: 100%; border-radius: 0; }
 
 .product-card__body {
@@ -404,6 +410,12 @@ img { max-width: 100%; display: block; }
   font-family: var(--font-heading);
   color: var(--color-charcoal-soft);
   margin-bottom: 0.5rem;
+}
+
+/* Pin the button to the bottom so it lines up across every card, whether or
+   not that card has a tag and however long its name wraps. */
+.product-card__body .btn {
+  margin-top: auto;
 }
 
 /* Feature / split section */
