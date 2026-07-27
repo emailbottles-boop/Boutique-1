@@ -25,6 +25,7 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { compressImageToDataUrl } from "./image-utils.js";
+import { loadSiteImages } from "./site-images.js";
 
 const notConfiguredEl = document.getElementById("not-configured");
 const loginView = document.getElementById("login-view");
@@ -136,6 +137,7 @@ function initAuth() {
     initTabs();
     initAccount(user);
     loadProducts();
+    loadSiteImageSlots();
     loadInquiries();
   });
 }
@@ -257,6 +259,105 @@ async function initAccount(user) {
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Update Password";
+    }
+  });
+}
+
+// ---------- Page photos (hero / storefront) ----------
+//
+// These are the big photos that aren't product items. They live in a single
+// Firestore doc so the owner can swap them here rather than uploading files
+// to GitHub.
+
+const SITE_SLOTS = [
+  {
+    key: "hero",
+    elId: "slot-hero",
+    prompt: "Add the big photo for the top of your page",
+    overlayText: "Change this photo",
+    mockCopy: "Women's fashion, hand-picked weekly.",
+  },
+  {
+    key: "storefront",
+    elId: "slot-storefront",
+    prompt: "Add a photo of your shop",
+    overlayText: "Change this photo",
+  },
+];
+
+async function loadSiteImageSlots() {
+  const saved = (await loadSiteImages()) || {};
+  SITE_SLOTS.forEach((slot) => buildSiteSlot(slot, saved[slot.key] || null));
+}
+
+function buildSiteSlot(slot, savedUrl) {
+  const host = document.getElementById(slot.elId);
+  if (!host) return;
+  host.innerHTML = "";
+
+  // Turn the div into a label so tapping anywhere opens the file picker.
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+
+  const img = document.createElement("img");
+  const emptyState = document.createElement("span");
+  emptyState.className = "page-map__slot-empty";
+  emptyState.innerHTML = `<strong>+</strong>${slot.prompt}`;
+
+  const overlay = document.createElement("span");
+  overlay.className = "page-map__slot-overlay";
+  overlay.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>${slot.overlayText}`;
+
+  // The site ships with a default photo in the HTML, so an unset slot still
+  // shows something on the real page — reflect that here rather than
+  // pretending the spot is blank.
+  const fallback = slot.key === "hero" ? "images/store-display.jpg" : "images/storefront.jpg";
+  const current = savedUrl || fallback;
+
+  img.src = current;
+  img.alt = "";
+  host.appendChild(img);
+  host.appendChild(overlay);
+
+  if (slot.mockCopy) {
+    const copy = document.createElement("span");
+    copy.className = "page-map__hero-copy";
+    copy.textContent = slot.mockCopy;
+    host.appendChild(copy);
+  }
+
+  host.appendChild(fileInput);
+  host.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    overlay.textContent = "Saving…";
+    try {
+      const dataUrl = await compressImageToDataUrl(file);
+      img.src = dataUrl;
+      await setDoc(
+        doc(db, "site", "images"),
+        { [slot.key]: dataUrl, updatedAt: serverTimestamp() },
+        { merge: true }
+      );
+      showToast("Photo updated — it's live on the site now.");
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Couldn't save that photo — try again.");
+      img.src = current;
+    } finally {
+      overlay.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>${slot.overlayText}`;
     }
   });
 }

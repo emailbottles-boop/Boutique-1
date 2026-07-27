@@ -98,11 +98,59 @@
 
     <section id="products-panel" class="admin-panel is-active">
       <p class="admin-hint">
-        This is what your shop page looks like. Tap any photo to swap it, tap the
-        name or price to change it. Your edits go live when you press Save.
+        This is a map of your home page, top to bottom. Tap any photo area to
+        put your own picture there — what you see here is where it shows up on
+        the real site.
       </p>
 
-      <div id="products-list" class="admin-preview-grid"></div>
+      <div class="page-map">
+
+        <!-- Hero -->
+        <div class="page-map__section">
+          <div class="page-map__label">
+            <span class="page-map__num">1</span>
+            Big photo at the top
+          </div>
+          <div class="page-map__hero" id="slot-hero"></div>
+          <p class="page-map__note">The first thing visitors see, behind your shop name.</p>
+        </div>
+
+        <div class="page-map__arrow" aria-hidden="true">↓</div>
+
+        <!-- Showcase -->
+        <div class="page-map__section">
+          <div class="page-map__label">
+            <span class="page-map__num">2</span>
+            What's in the shop right now
+          </div>
+          <div class="page-map__mock-heading">In the Shop Right Now</div>
+          <div id="products-list" class="admin-preview-grid"></div>
+          <p class="page-map__note">
+            These show on your home page and your shop page. Swap them out as your racks change.
+          </p>
+        </div>
+
+        <div class="page-map__arrow" aria-hidden="true">↓</div>
+
+        <!-- Storefront / story -->
+        <div class="page-map__section">
+          <div class="page-map__label">
+            <span class="page-map__num">3</span>
+            Photo beside your story
+          </div>
+          <div class="page-map__split">
+            <div class="page-map__storefront" id="slot-storefront"></div>
+            <div class="page-map__text">
+              <div class="page-map__mock-heading" style="text-align:left;">A downtown Enumclaw favorite.</div>
+              <div class="page-map__lines">
+                <span></span><span></span><span></span><span style="width:60%"></span>
+              </div>
+            </div>
+          </div>
+          <p class="page-map__note">Also used on your About page.</p>
+        </div>
+
+      </div>
     </section>
 
     <section id="inquiries-panel" class="admin-panel">
