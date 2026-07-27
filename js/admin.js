@@ -1,7 +1,7 @@
 // Bridget's Boutique — admin dashboard logic
 // Requires Firebase to be configured (see js/firebase-config.js).
 
-import { db, auth, storage, FIREBASE_CONFIGURED } from "./firebase-init.js";
+import { db, auth, FIREBASE_CONFIGURED } from "./firebase-init.js";
 import {
   signInWithEmailAndPassword,
   signOut,
@@ -24,11 +24,7 @@ import {
   orderBy,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
+import { compressImageToDataUrl } from "./image-utils.js";
 
 const notConfiguredEl = document.getElementById("not-configured");
 const loginView = document.getElementById("login-view");
@@ -347,7 +343,7 @@ function renderProductRow(id, product) {
     try {
       let photoUrl = product.photoUrl || null;
       if (fileInput.files[0]) {
-        photoUrl = await uploadProductPhoto(id, fileInput.files[0]);
+        photoUrl = await prepareProductPhoto(fileInput.files[0]);
       }
       await updateDoc(doc(db, "products", id), {
         name: nameInput.value,
@@ -377,11 +373,11 @@ function renderProductRow(id, product) {
   return card;
 }
 
-async function uploadProductPhoto(productId, file) {
-  const path = `product-photos/${productId}-${Date.now()}-${file.name}`;
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file);
-  return getDownloadURL(storageRef);
+// Photos are compressed in the browser and saved straight into the product's
+// Firestore document, so no Firebase Storage (and therefore no billing
+// account) is needed. See js/image-utils.js.
+async function prepareProductPhoto(file) {
+  return compressImageToDataUrl(file);
 }
 
 document.getElementById("new-product-form").addEventListener("submit", async (e) => {
@@ -407,7 +403,7 @@ document.getElementById("new-product-form").addEventListener("submit", async (e)
     });
 
     if (file) {
-      const photoUrl = await uploadProductPhoto(docRef.id, file);
+      const photoUrl = await prepareProductPhoto(file);
       await updateDoc(doc(db, "products", docRef.id), { photoUrl });
     }
 

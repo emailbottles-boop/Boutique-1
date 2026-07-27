@@ -1,11 +1,22 @@
 rules_version = '2';
 
-// Paste this into: Firebase Console > Storage > Rules > Publish.
+// ============================================================
+// OPTIONAL — you do NOT need this file for the site to work.
+// ============================================================
 //
-// Same security model as firestore.rules: being logged in is not enough,
-// because anyone can create an account. Uploading requires the user's UID
-// to be in the `admins` collection in Firestore, which is only editable
-// from the Firebase Console.
+// This project does not use Firebase Storage. Product photos are
+// compressed in the browser and stored directly in Firestore (see
+// js/image-utils.js), because enabling Storage on newer Firebase
+// projects requires upgrading to the Blaze plan and attaching a credit
+// card. Avoiding it keeps everything on the free Spark plan.
+//
+// You only need to publish these rules IF you later enable Storage —
+// for example if the shop grows enough that photos should be served
+// from a CDN instead of the database. Until then, skip this file
+// entirely; there is no Storage bucket for it to apply to.
+//
+// If you do enable Storage later, paste this into:
+//   Firebase Console > Storage > Rules > Publish
 
 service firebase.storage {
   match /b/{bucket}/o {
@@ -14,9 +25,10 @@ service firebase.storage {
       // Public site needs to display the photos.
       allow read: if true;
 
-      // Only an allowlisted admin can upload, and only real images
-      // under 10 MB — so a compromised login can't be used to host
-      // arbitrary files on the boutique's bandwidth.
+      // Same security model as firestore.rules: being signed in is not
+      // enough, because anyone can create an account. Uploading requires
+      // the user's UID to be in the `admins` Firestore collection, which
+      // is only editable from the Firebase Console.
       allow write: if request.auth != null
         && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
         && request.resource.size < 10 * 1024 * 1024
