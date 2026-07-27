@@ -1,14 +1,26 @@
-name: Deploy to Firebase Hosting
+name: Deploy to Firebase Hosting (optional — not in use)
 
-# Auto-deploys the site to Firebase Hosting every time this branch is
-# pushed. Requires the FIREBASE_SERVICE_ACCOUNT and FIREBASE_PROJECT_ID
-# secrets to be set (Repo Settings > Secrets and variables > Actions) —
-# see the "Auto-deploy setup" section in README.md.
+# NOT USED BY DEFAULT.
+#
+# This site is hosted on GitHub Pages; Firebase provides only the backend
+# (Firestore + Auth). This workflow exists in case you ever want to serve
+# the site from Firebase Hosting instead.
+#
+# It is set to manual-trigger only, so it does NOT run on every push — if
+# it ran without the required secrets it would just fail and put a red X
+# on each commit.
+#
+# To use it: add the FIREBASE_SERVICE_ACCOUNT and FIREBASE_PROJECT_ID
+# secrets (Repo Settings > Secrets and variables > Actions), then either
+# run it manually from the Actions tab, or restore the push trigger:
+#
+#   on:
+#     push:
+#       branches:
+#         - bridgets-boutique-website-86pp8x
 
 on:
-  push:
-    branches:
-      - bridgets-boutique-website-86pp8x
+  workflow_dispatch:
 
 jobs:
   deploy:

@@ -15,6 +15,7 @@ A static website for Bridget's Boutique, a women's clothing boutique in downtown
 - `js/contact.js` — handles the contact/order form submission
 - `js/admin.js`, `js/firebase-init.js`, `js/firebase-config.js` — the admin dashboard and its Firebase connection
 - `firebase/firestore.rules` — security rules to paste into the Firebase console
+- `.nojekyll` — stops GitHub Pages processing the site through Jekyll
 - `firebase/storage.rules` — optional/unused; only needed if you ever enable Firebase Storage
 - `js/image-utils.js` — compresses photos in the browser so they fit in Firestore
 - `404.html` — styled not-found page
@@ -57,6 +58,10 @@ on the contact form. Connecting Firebase turns on:
 It's genuinely free at this scale (Firebase's Spark plan) and there's no server to
 host or pay for — the site talks to Firebase directly from the browser.
 
+**Architecture:** the site itself is hosted on GitHub Pages; Firebase supplies only
+the database and the login. The two are independent — the dashboard reaches Firebase
+straight from the visitor's browser, so it works regardless of who serves the HTML.
+
 **Setup steps (one-time, ~15 minutes):**
 
 1. Go to https://console.firebase.google.com and create a new project (free Spark plan).
@@ -80,8 +85,8 @@ host or pay for — the site talks to Firebase directly from the browser.
    `firebase/firestore.rules` → Publish.
 8. *(Skip — no Storage bucket to configure. `firebase/storage.rules` is kept only
    in case you enable Storage later; see the file's header.)*
-9. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
-   same login, so hosting + database + photo storage + admin login are all in one place.
+9. Add your GitHub Pages domain to **Authentication → Settings → Authorized
+   domains** (see "Deploying" below) — the login will not work without this.
 10. Visit `yoursite.com/admin.html` and log in with the email + temporary password
     from step 4. The dashboard shows a banner prompting the owner to set their own
     password under the **Account** tab — after that, only they know it.
@@ -208,41 +213,57 @@ Only after that should the site be submitted to Google Search Console.
 1. **Backend** — set up Firebase (see above) so the owner can manage products and see inquiries without touching code.
 2. **Domain** — once a real domain is live, replace the placeholder `https://www.bridgetsboutiqueenumclaw.com` in every page's `<head>` (canonical/OG/Twitter/JSON-LD tags) plus `robots.txt` and `sitemap.xml` with the actual domain.
 
-## Deploying
+## Deploying (GitHub Pages)
 
-**Recommended: Firebase Hosting** — same project as the backend above, so there's
-just one account and one dashboard for everything (site, database, photo storage,
-admin login), instead of juggling a separate host.
+The site is hosted on **GitHub Pages**. Firebase is used only for the backend —
+the database (product items, order inquiries) and the admin login. Hosting and
+backend are independent: the dashboard talks to Firebase directly from the
+visitor's browser, so it works no matter who serves the HTML.
 
-### Manual deploy (one-time setup, ~5 minutes)
+### Turning Pages on
 
-1. Install the Firebase CLI: `npm install -g firebase-tools`
-2. `firebase login` (opens a browser to sign in with the Google account that owns the Firebase project)
-3. In this project's folder, edit `.firebaserc` and replace `YOUR_FIREBASE_PROJECT_ID` with the actual project ID (found in Firebase Console → Project settings).
-4. `firebase deploy --only hosting`
-5. The CLI prints the live URL (`your-project.web.app`) — that's the site, live, for free.
+1. Repo **Settings → Pages**.
+2. Source: **Deploy from a branch**.
+3. Branch: **`bridgets-boutique-website-86pp8x`**, folder: **`/ (root)`**. Save.
+4. Wait a minute, then the site is live at
+   `https://<your-github-username>.github.io/Boutique-1/`.
 
-Run step 4 again any time you want to push an update manually.
+Every push to that branch redeploys automatically — there is no build step.
 
-### Auto-deploy from GitHub (recommended — no manual step ever again)
+`.nojekyll` in the repo root stops Pages from running the files through Jekyll,
+which can otherwise mangle or skip files unexpectedly.
 
-A workflow is already set up at `.github/workflows/firebase-deploy.yml` that deploys
-automatically every time this branch is pushed. To turn it on:
+### ⚠️ Required: authorize the domain in Firebase
 
-1. In Firebase Console → Project settings → **Service accounts** → "Generate new private key" → downloads a JSON file. Keep it secret (don't commit it to the repo).
-2. On GitHub, go to the repo's **Settings → Secrets and variables → Actions** → **New repository secret**:
-   - `FIREBASE_SERVICE_ACCOUNT` — paste the entire contents of the JSON file from step 1.
-   - `FIREBASE_PROJECT_ID` — the Firebase project ID.
-3. Push any change to this branch — the "Deploy to Firebase Hosting" check runs automatically and the live site updates within a minute or two.
+**The admin login will fail until you do this.** Firebase Authentication only
+accepts sign-ins from domains on its allowlist. Your GitHub Pages domain is not
+on it by default, so logging in would fail with `auth/unauthorized-domain`.
 
-From then on, pushing code (including from a Claude Code session) is the only
-"deploy" step needed — the admin dashboard needs no deploy at all since it reads
-live from Firebase directly.
+Firebase Console → **Authentication → Settings → Authorized domains → Add domain**:
 
-### Alternative: a different static host
+- `<your-github-username>.github.io`
+- and later, your real custom domain once you connect one
 
-If you'd rather not use Firebase Hosting, any static host still works fine for the
-site itself (Netlify, Vercel, GitHub Pages, etc.) — the admin dashboard and backend
-work the same way regardless of where the static files are served from, since they
-talk to Firebase directly from the browser either way. The main advantage of
-Firebase Hosting specifically is having one login for everything instead of two.
+`localhost` is already allowed, so local testing works without this step — which
+is exactly why it's easy to miss until the deployed site breaks.
+
+### Connecting a custom domain
+
+1. Buy the domain at any registrar.
+2. Repo **Settings → Pages → Custom domain** → enter it → Save. GitHub writes a
+   `CNAME` file to the repo.
+3. At your registrar, add the DNS records GitHub shows you.
+4. Tick **Enforce HTTPS** once the certificate is issued (usually under an hour).
+5. **Add the new domain to Firebase's Authorized domains too** (see above), or
+   the admin login will break on the custom domain even though it worked on
+   `github.io`.
+6. Update the placeholder `https://www.bridgetsboutiqueenumclaw.com` in each
+   page's `<head>` (canonical/OG/Twitter/JSON-LD), plus `robots.txt` and
+   `sitemap.xml`, to the real domain.
+
+### Optional: Firebase Hosting instead
+
+`firebase.json`, `.firebaserc`, and `.github/workflows/firebase-deploy.yml` are
+included in case you ever want to serve the site from Firebase Hosting instead of
+Pages. The workflow is set to manual-trigger only, so it will not run (or fail)
+on pushes. Nothing needs to be done with these files while using Pages.
