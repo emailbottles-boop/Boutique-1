@@ -41,6 +41,10 @@ function showToast(message) {
   setTimeout(() => toastEl.classList.remove("is-visible"), 2600);
 }
 
+// Tells the inline watchdog in admin.html that this module loaded, so it
+// doesn't show the "couldn't load" message.
+window.__adminStarted = true;
+
 if (!FIREBASE_CONFIGURED) {
   notConfiguredEl.style.display = "block";
 } else {
