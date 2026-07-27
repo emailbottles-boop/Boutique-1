@@ -1,0 +1,139 @@
+# @@BUSINESS_NAME@@ — Website
+
+A static website for @@BUSINESS_NAME@@@@BUSINESS_LOCATION_SUFFIX@@. No build step required — plain HTML/CSS/JS. Generated from a shared template with `tools/generate_site.py` — see that tool's own repo for regenerating or rebuilding this site from `@@CONFIG_BASENAME@@`.
+
+## Structure
+
+- `index.html` — home page
+@@README_SHOP_LINE@@
+- `about.html` — story, hours, map
+- `contact.html` — contact / order inquiry form
+- `admin.html` — password-protected dashboard for managing @@CATALOG_ITEM_PLURAL_LOWER@@/photos and viewing order inquiries (see "Free Backend" below)
+- `css/style.css`, `css/admin.css` — styles
+- `js/script.js` — nav toggle, active-link highlighting, scroll effects
+@@README_PRODUCTS_JS_LINE@@
+- `js/contact.js` — handles the contact/order form submission
+- `js/admin.js`, `js/firebase-init.js`, `js/firebase-config.js` — the admin dashboard and its Firebase connection
+- `firebase/firestore.rules`, `firebase/storage.rules` — security rules to paste into the Firebase console
+- `404.html` — styled not-found page
+- `robots.txt` / `sitemap.xml` — SEO crawling config
+- `images/` — site images (generated placeholders — swap in real photos any time)
+
+## Real business info already wired up
+
+- Address: @@STREET@@, @@CITY@@, @@STATE@@ @@ZIP@@ (linked to Google Maps)
+- Phone: @@PHONE_DISPLAY@@ (click-to-call)
+- Hours: @@HOURS_FOOTER_SUMMARY@@
+@@README_SOCIAL_LINES@@
+
+## Polish / "pro" features
+
+- Full-bleed hero with dark overlay, pill-shaped CTA buttons, centered typography
+- Sticky mobile "convenience bar" (Call / Order / Directions) always reachable on phones
+- Circular social icon buttons in the desktop nav
+- Scroll-reveal animations (respects `prefers-reduced-motion`)
+- Header gains a shadow on scroll
+- `@@SCHEMA_TYPE@@` JSON-LD structured data on every page (real NAP, hours, social links) for local SEO / Google rich results
+- Open Graph + Twitter Card meta tags with a real photo, so links look good when shared
+- Accessibility: skip-to-content link, visible focus states, `aria-label`s throughout
+- Image `loading="lazy"` on the map embed; hero/logo load eagerly
+
+## Free Backend Setup (Firebase)
+
+The site works standalone with demo data and a "call us to order" fallback
+on the contact form. Connecting Firebase turns on:
+
+- **admin.html** — a login-protected dashboard where the owner adds/edits @@CATALOG_ITEM_PLURAL_LOWER@@,
+  uploads photos, and views order inquiries — no GitHub or code editing needed.
+- **Live @@CATALOG_ITEM_PLURAL_LOWER@@** — the public site pulls data from Firebase instead of
+  the hardcoded demo list, so admin edits show up immediately.
+- **Real order inquiries** — the contact form saves submissions to Firebase instead
+  of just showing a placeholder message.
+
+It's genuinely free at this scale (Firebase's Spark plan) and there's no server to
+host or pay for — the site talks to Firebase directly from the browser.
+
+**Setup steps (one-time, ~15 minutes):**
+
+1. Go to https://console.firebase.google.com and create a new project (free Spark plan).
+2. **Firestore Database** → Create database → start in production mode.
+3. **Storage** → Get started (accept the default bucket).
+4. **Authentication** → Sign-in method → enable **Email/Password**. Then go to the
+   **Users** tab → Add user → enter the owner's email and a password. That's their
+   admin login for `/admin.html`.
+5. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
+   icon → register an app (nickname doesn't matter, check "Also set up Firebase
+   Hosting" if offered) → copy the `firebaseConfig` object it gives you into
+   `js/firebase-config.js`, replacing the placeholder values.
+6. **Firestore Database** → **Rules** tab → paste in the contents of
+   `firebase/firestore.rules` → Publish.
+7. **Storage** → **Rules** tab → paste in the contents of `firebase/storage.rules` → Publish.
+8. Deploy the site to **Firebase Hosting** (see "Deploying" below) — same project,
+   same login, so hosting + database + photo storage + admin login are all in one place.
+9. Visit `yoursite.com/admin.html` and log in with the email/password from step 4.
+
+Once @@CATALOG_ITEM_PLURAL_LOWER@@ are added in the dashboard, they replace the demo listings on the
+public site automatically. `admin.html` is excluded from search engines
+(`robots.txt` + a `noindex` tag) since it's not meant to be publicly discoverable —
+it's still only reachable by whoever has the login, but there's no reason for it
+to show up in search results either.
+
+## Replacing photos without Firebase (no code editing required)
+
+The images shipped in `images/` are generated placeholders (simple colored graphics
+using the brand colors), not real photos. Swap them any time by uploading a
+replacement with the **same filename**:
+
+| File | Where it's used |
+|---|---|
+| `images/store-display.svg` (or `.jpg`) | Home page hero background, About page photo |
+| `images/storefront.svg` (or `.jpg`) | Home page "Locally Owned" section, social-share preview image |
+| `images/logo.svg` | Logo shown in the nav and browser tab |
+
+To use a real photo instead of the placeholder, upload a `.jpg`/`.png` with the
+matching base name and update the `src=`/`content=` references in the HTML files
+(a find/replace of the filename extension across the repo is enough).
+
+## To go fully live
+
+1. **Backend** — set up Firebase (see above) so the owner can manage @@CATALOG_ITEM_PLURAL_LOWER@@ and see inquiries without touching code.
+2. **Domain** — once a real domain is live, confirm `@@DOMAIN@@` in every page's `<head>` (canonical/OG/Twitter/JSON-LD tags) plus `robots.txt` and `sitemap.xml` matches it. If it changes, re-run the generator with an updated `domain` field.
+
+## Deploying
+
+**Recommended: Firebase Hosting** — same project as the backend above, so there's
+just one account and one dashboard for everything (site, database, photo storage,
+admin login), instead of juggling a separate host.
+
+### Manual deploy (one-time setup, ~5 minutes)
+
+1. Install the Firebase CLI: `npm install -g firebase-tools`
+2. `firebase login` (opens a browser to sign in with the Google account that owns the Firebase project)
+3. In this project's folder, edit `.firebaserc` and replace `@@FIREBASE_PROJECT_ID@@` with the actual project ID (found in Firebase Console → Project settings).
+4. `firebase deploy --only hosting`
+5. The CLI prints the live URL (`your-project.web.app`) — that's the site, live, for free.
+
+Run step 4 again any time you want to push an update manually.
+
+### Auto-deploy from GitHub (recommended — no manual step ever again)
+
+A workflow is already set up at `.github/workflows/firebase-deploy.yml` that deploys
+automatically every time the `@@DEPLOY_BRANCH@@` branch is pushed. To turn it on:
+
+1. In Firebase Console → Project settings → **Service accounts** → "Generate new private key" → downloads a JSON file. Keep it secret (don't commit it to the repo).
+2. On GitHub, go to the repo's **Settings → Secrets and variables → Actions** → **New repository secret**:
+   - `FIREBASE_SERVICE_ACCOUNT` — paste the entire contents of the JSON file from step 1.
+   - `FIREBASE_PROJECT_ID` — the Firebase project ID.
+3. Push any change to the `@@DEPLOY_BRANCH@@` branch — the "Deploy to Firebase Hosting" check runs automatically and the live site updates within a minute or two.
+
+### Alternative: a different static host
+
+If you'd rather not use Firebase Hosting, any static host still works fine for the
+site itself (Netlify, Vercel, GitHub Pages, etc.) — the admin dashboard and backend
+work the same way regardless of where the static files are served from, since they
+talk to Firebase directly from the browser either way. The main advantage of
+Firebase Hosting specifically is having one login for everything instead of two.
+
+---
+
+*This site was generated by `tools/generate_site.py` from `@@CONFIG_BASENAME@@`. To regenerate it (e.g. after editing colors, hours, or catalog items), re-run the generator with `--force` and re-deploy.*

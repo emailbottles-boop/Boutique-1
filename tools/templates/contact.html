@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact / Order | @@BUSINESS_NAME@@</title>
+<meta name="description" content="@@META_DESCRIPTION_CONTACT@@" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="@@GOOGLE_FONTS_HREF@@" rel="stylesheet">
+<link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="canonical" href="@@DOMAIN@@/contact.html" />
+<meta name="theme-color" content="@@COLOR_CHARCOAL@@" />
+<link rel="apple-touch-icon" href="images/logo.svg" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="@@BUSINESS_NAME@@" />
+<meta property="og:title" content="Contact &amp; Order — @@BUSINESS_NAME@@" />
+<meta property="og:description" content="@@META_DESCRIPTION_CONTACT@@" />
+<meta property="og:url" content="@@DOMAIN@@/contact.html" />
+<meta property="og:image" content="@@DOMAIN@@/@@OG_IMAGE@@" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Contact &amp; Order — @@BUSINESS_NAME@@" />
+<meta name="twitter:description" content="@@META_DESCRIPTION_CONTACT@@" />
+<meta name="twitter:image" content="@@DOMAIN@@/@@OG_IMAGE@@" />
+<script type="application/ld+json">
+@@JSONLD_BLOCK_CONTACT@@
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+@@SITE_HEADER@@
+
+<main id="main-content">
+
+  <section class="page-hero">
+    <div class="container">
+      <span class="breadcrumb">Home / Contact &amp; Order</span>
+      <h1>Contact &amp; Order Inquiries</h1>
+      <p>Have a question, want to reserve something, or ordering something you saw online or in store? Reach out below@@SOCIAL_DM_HINT@@.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+
+      <div>
+        <h2>Send an Inquiry</h2>
+        <p>Fill this out and we'll follow up with availability, pricing, and pickup or shipping options.</p>
+
+        <!--
+          Submissions save to Firebase (see js/contact.js) once
+          js/firebase-config.js is filled in — until then this shows a
+          "not connected yet" message instead of losing the submission.
+        -->
+        <form id="order-form" class="form-grid">
+          <div class="form-row form-row--2">
+            <div>
+              <label for="name">Full Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+            <div>
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+          </div>
+
+          <div class="form-row form-row--2">
+            <div>
+              <label for="phone">Phone (optional)</label>
+              <input type="tel" id="phone" name="phone" />
+            </div>
+            <div>
+              <label for="inquiry_type">Inquiry Type</label>
+              <select id="inquiry_type" name="inquiry_type">
+                <option value="order">Order an @@CATALOG_ITEM_SINGULAR_TITLE@@</option>
+                <option value="question">General Question</option>
+                <option value="availability">Check Availability</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="item">@@CATALOG_ITEM_SINGULAR_TITLE@@ / Description</label>
+            <input type="text" id="item" name="item" placeholder="@@ITEM_PLACEHOLDER@@" />
+          </div>
+
+          <div>
+            <label for="message">Message</label>
+            <textarea id="message" name="message" required placeholder="Tell us what you're looking for..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--block">Send Inquiry</button>
+          <p class="form-status"></p>
+          <p class="form-note">We typically reply within 1 business day. For faster service, call@@SOCIAL_DM_HINT@@.</p>
+        </form>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div class="info-card reveal">
+          <h3>📞 Call or Text</h3>
+          <p>The fastest way to reach us during store hours.</p>
+          <a class="btn btn--outline btn--small" href="tel:@@PHONE_TEL@@">@@PHONE_DISPLAY@@</a>
+        </div>
+@@CONTACT_SOCIAL_CARD@@
+        <div class="info-card reveal">
+          <h3>📍 Visit In Store</h3>
+          <p>@@STREET@@<br />@@CITY@@, @@STATE@@ @@ZIP@@</p>
+          <table class="hours-table">
+@@HOURS_TABLE_ROWS@@
+          </table>
+          <a class="btn btn--outline btn--small" style="margin-top:0.75rem;" href="@@MAPS_URL@@" target="_blank" rel="noopener">Get Directions</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+@@SITE_FOOTER@@
+
+@@CONVENIENCE_BAR@@
+
+<script src="js/script.js"></script>
+<script type="module" src="js/contact.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

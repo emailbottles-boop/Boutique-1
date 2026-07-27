@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// Paste this into: Firebase Console > Storage > Rules > Publish.
+//
+// Same security model as firestore.rules: being logged in is not enough,
+// because anyone can create an account. Uploading requires the user's UID
+// to be in the `admins` collection in Firestore, which is only editable
+// from the Firebase Console.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /product-photos/{allPaths=**} {
+      // Public site needs to display the photos.
+      allow read: if true;
+
+      // Only an allowlisted admin can upload, and only real images
+      // under 10 MB — so a compromised login can't be used to host
+      // arbitrary files on the boutique's bandwidth.
+      allow write: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Nothing else in the bucket is reachable from the website.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
