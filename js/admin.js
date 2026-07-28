@@ -71,7 +71,10 @@ function initAuth() {
     e.preventDefault();
     loginError.classList.remove("is-visible");
     resetStatus.classList.remove("is-visible");
-    const email = document.getElementById("login-email").value.trim();
+    // Lowercased because phone keyboards commonly auto-capitalize the first
+    // letter of an email field (Emailbottles@... instead of emailbottles@...),
+    // which happens far more often on mobile than when typing on a desktop.
+    const email = document.getElementById("login-email").value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -88,7 +91,7 @@ function initAuth() {
   // "Forgot your password?" — Firebase emails a reset link, so the owner
   // can recover on their own without anyone resetting it for them.
   document.getElementById("forgot-password-btn").addEventListener("click", async () => {
-    const email = document.getElementById("login-email").value.trim();
+    const email = document.getElementById("login-email").value.trim().toLowerCase();
     resetStatus.classList.remove("is-visible", "form-status--success", "form-status--error");
     if (!email) {
       resetStatus.textContent = "Type your email address above first, then tap this again.";
