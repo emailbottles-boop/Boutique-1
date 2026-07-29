@@ -39,20 +39,34 @@ async function loadProducts() {
   }
 }
 
+// Product text is typed by the owner in the dashboard and stored in Firestore,
+// so it is not attacker-controlled — but it still must be escaped before being
+// built into HTML. An unescaped apostrophe or ampersand in an ordinary name
+// ("Mom & Me Dress") renders wrong, and a double quote in a name closes the
+// alt attribute early, which turns a typo into markup injection.
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
 function productCardHTML(product) {
-  const tag = product.tag ? `<span class="product-card__tag">${product.tag}</span>` : "";
-  const photo = product.photoUrl || "";
+  const name = escapeHtml(product.name);
+  const tag = product.tag
+    ? `<span class="product-card__tag">${escapeHtml(product.tag)}</span>`
+    : "";
+  const photo = escapeHtml(product.photoUrl || "");
 
   return `
     <div class="product-card">
       <div class="product-card__image">
-        <img src="${photo}" alt="${product.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+        <img src="${photo}" alt="${name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
       </div>
       <div class="product-card__body">
         ${tag}
-        <h3>${product.name}</h3>
-        <div class="product-card__price">${product.price}</div>
-        <a class="btn btn--outline btn--small btn--block" href="contact.html?item=${encodeURIComponent(product.name)}">Ask About This</a>
+        <h3>${name}</h3>
+        <div class="product-card__price">${escapeHtml(product.price)}</div>
+        <a class="btn btn--outline btn--small btn--block" href="contact.html?item=${encodeURIComponent(product.name ?? "")}">Ask About This</a>
       </div>
     </div>
   `;
@@ -67,7 +81,7 @@ function attachImageFallbacks(container) {
       () => {
         const placeholder = document.createElement("div");
         placeholder.className = "placeholder-img";
-        placeholder.innerHTML = `<div class="placeholder-img__inner">Product Photo<br>${img.alt}</div>`;
+        placeholder.innerHTML = `<div class="placeholder-img__inner">Product Photo<br>${escapeHtml(img.alt)}</div>`;
         img.replaceWith(placeholder);
       },
       { once: true }

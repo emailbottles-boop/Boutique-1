@@ -51,11 +51,22 @@ service cloud.firestore {
 
     // Basic shape/size checks so the public contact form can't be used to
     // dump arbitrary data or huge payloads into the database.
+    // The contact form is open to the world — that is the point of a contact
+    // form — so this is the only thing standing between it and being used as
+    // free storage. Size limits on the known fields are not enough on their
+    // own: without hasOnly, anything at all could be attached alongside them
+    // and written up to Firestore's 1 MB per-document limit.
     function validInquiry() {
       let d = request.resource.data;
-      return d.name is string && d.name.size() > 0 && d.name.size() <= 100
+      return d.keys().hasOnly(
+             ['name', 'email', 'phone', 'inquiryType', 'item', 'message',
+              'status', 'createdAt'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 100
         && d.email is string && d.email.size() > 0 && d.email.size() <= 200
         && d.message is string && d.message.size() > 0 && d.message.size() <= 2000
+        && (!('phone' in d) || (d.phone is string && d.phone.size() <= 40))
+        && (!('item' in d) || (d.item is string && d.item.size() <= 200))
+        && (!('inquiryType' in d) || (d.inquiryType is string && d.inquiryType.size() <= 60))
         && d.status == 'new';
     }
 
