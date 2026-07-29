@@ -16,9 +16,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Who counts as an admin. Two ways to qualify, and either is enough.
+    //
+    // 1. Your email is on the list below. Mirror of js/admin-emails.js.
+    //    Preferred for the shop owner: an email is readable, it survives
+    //    deleting and recreating the account, and a typo in one is visible.
+    // 2. Your UID has a document in the `admins` collection. Kept because it
+    //    already works, and because it lets someone be added without editing
+    //    and republishing these rules.
+    //
+    // Emails are compared lowercased so a capitalized sign-in still matches.
+    function isAdminEmail() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() in [
+             'robbiestewart721@gmail.com'
+           ];
+    }
+
     function isAdmin() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+        && (isAdminEmail()
+            || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
     }
 
     // Basic shape/size checks so the public contact form can't be used to
@@ -39,11 +58,10 @@ service cloud.firestore {
     }
 
     // Each admin's own settings (e.g. whether they've changed their
-    // starting password). Readable/writable only by that admin.
+    // starting password). Readable/writable only by that admin, and only
+    // for their own document.
     match /adminProfile/{uid} {
-      allow read, write: if request.auth != null
-        && request.auth.uid == uid
-        && exists(/databases/$(database)/documents/admins/$(uid));
+      allow read, write: if isAdmin() && request.auth.uid == uid;
     }
 
     // Products: public site reads them; only an allowlisted admin writes.
