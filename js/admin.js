@@ -180,11 +180,11 @@ function loginErrorMessage(code) {
     case "auth/user-not-found":
       return "That email and password don't match an account. Check for typos, or use \"Forgot your password?\" below.";
     case "auth/invalid-credential":
-      // We already retried once automatically (see signInWithRetry) before this
-      // message is ever shown, so this is either a genuine mismatch or a
-      // browser extension persistently blocking Firebase's security check —
-      // both need the same next step.
-      return "Couldn't sign in. This is usually either the wrong password, or a browser extension (often an ad blocker) blocking a security check Firebase runs. Try a Private/Incognito window — if that works, an extension was the cause.";
+      // We already retried once automatically (see signInWithRetry) before
+      // this message is ever shown. Kept short and single-action on purpose
+      // — the fuller explanation lives in the standing tip below the form,
+      // not stacked into the error text itself.
+      return "That didn't work. Try opening this page in a Private/Incognito window and logging in there.";
     case "auth/invalid-email":
       return "That doesn't look like a valid email address.";
     case "auth/unauthorized-domain":
