@@ -62,6 +62,24 @@ function showView(view) {
   logoutBtn.style.display = view === "dashboard" ? "inline-flex" : "none";
 }
 
+// Firebase runs a background bot-check (reCAPTCHA Enterprise) before it even
+// looks at the password. If a browser extension — most commonly an ad
+// blocker — blocks that check's script, sign-in fails with
+// auth/invalid-credential even when the email and password are correct. This
+// can't be fixed from our code (the block happens in the browser, outside
+// anything this site controls), but the failure is often transient rather
+// than deterministic, so one silent retry recovers a real slice of these
+// without the person ever seeing an error at all.
+async function signInWithRetry(email, password) {
+  try {
+    return await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    if (err.code !== "auth/invalid-credential") throw err;
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    return await signInWithEmailAndPassword(auth, email, password);
+  }
+}
+
 function initAuth() {
   const loginForm = document.getElementById("login-form");
   const loginError = document.getElementById("login-error");
@@ -76,8 +94,12 @@ function initAuth() {
     // which happens far more often on mobile than when typing on a desktop.
     const email = document.getElementById("login-email").value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Logging in…";
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithRetry(email, password);
     } catch (err) {
       // Report the actual cause. Several of these have nothing to do with the
       // password, and saying "check your password" for them sends people
@@ -85,6 +107,9 @@ function initAuth() {
       console.error("Login failed:", err.code, err);
       loginError.textContent = loginErrorMessage(err.code);
       loginError.classList.add("is-visible");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Log In";
     }
   });
 
@@ -152,9 +177,14 @@ function initAuth() {
 function loginErrorMessage(code) {
   switch (code) {
     case "auth/wrong-password":
-    case "auth/invalid-credential":
     case "auth/user-not-found":
       return "That email and password don't match an account. Check for typos, or use \"Forgot your password?\" below.";
+    case "auth/invalid-credential":
+      // We already retried once automatically (see signInWithRetry) before this
+      // message is ever shown, so this is either a genuine mismatch or a
+      // browser extension persistently blocking Firebase's security check —
+      // both need the same next step.
+      return "Couldn't sign in. This is usually either the wrong password, or a browser extension (often an ad blocker) blocking a security check Firebase runs. Try a Private/Incognito window — if that works, an extension was the cause.";
     case "auth/invalid-email":
       return "That doesn't look like a valid email address.";
     case "auth/unauthorized-domain":
