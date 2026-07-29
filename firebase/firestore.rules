@@ -28,11 +28,18 @@ service cloud.firestore {
     //    and republishing these rules.
     //
     // Emails are compared lowercased so a capitalized sign-in still matches.
+    //
+    // IMPORTANT: replace the placeholder below with the real owner address
+    // BEFORE publishing, and leave the real address out of this file when
+    // committing it. This repository is public, and a live admin address
+    // published here tells an attacker exactly which account to go after
+    // while protecting nothing — the rules stored in Firebase are what
+    // enforce access, and those are only editable from the Console.
     function isAdminEmail() {
       return request.auth != null
         && request.auth.token.email != null
         && request.auth.token.email.lower() in [
-             'robbiestewart721@gmail.com'
+             'owner@example.com'
            ];
     }
 
