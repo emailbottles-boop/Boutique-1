@@ -27,6 +27,7 @@ import {
 import { compressImageToDataUrl } from "./image-utils.js";
 import { loadSiteImages } from "./site-images.js";
 import { STARTER_ITEMS, HOME_PREVIEW_COUNT } from "./starter-items.js";
+import { isAdminEmail } from "./admin-emails.js";
 
 const notConfiguredEl = document.getElementById("not-configured");
 const loginView = document.getElementById("login-view");
@@ -149,19 +150,29 @@ function initAuth() {
     // rules enforce this too; this check just avoids showing a dashboard
     // where every action would fail.
     //
-    // Three outcomes, not two: on the list, not on the list, and "couldn't
-    // ask". They used to collapse into one "No Access" screen, which meant a
-    // rules or connection problem was reported as a permission problem and
-    // sent the owner hunting through the admin list for a document that was
-    // sitting there correctly the whole time.
-    let isAdmin = false;
+    // Two ways to qualify. The email allowlist (js/admin-emails.js) is checked
+    // first and needs no database round-trip at all, which keeps the owner's
+    // own access off the fragile path: a UID is 28 random characters that
+    // change every time an account is recreated, and the console truncates
+    // them, so keeping a document ID matched to one by hand is a recurring
+    // source of lockouts.
+    //
+    // The `admins` collection is still honoured, so any UID already configured
+    // there keeps working and additional people can be added that way.
+    //
+    // Three outcomes, not two: authorized, not authorized, and "couldn't ask".
+    // They used to collapse into one "No Access" screen, which meant a rules
+    // or connection problem was reported as a permission problem.
+    let isAdmin = isAdminEmail(user.email);
     let checkError = null;
-    try {
-      const adminDoc = await getDoc(doc(db, "admins", user.uid));
-      isAdmin = adminDoc.exists();
-    } catch (err) {
-      console.error("Couldn't verify admin access:", err);
-      checkError = err;
+    if (!isAdmin) {
+      try {
+        const adminDoc = await getDoc(doc(db, "admins", user.uid));
+        isAdmin = adminDoc.exists();
+      } catch (err) {
+        console.error("Couldn't verify admin access:", err);
+        checkError = err;
+      }
     }
 
     if (!isAdmin) {
