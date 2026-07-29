@@ -27,7 +27,6 @@ import {
 import { compressImageToDataUrl } from "./image-utils.js";
 import { loadSiteImages } from "./site-images.js";
 import { STARTER_ITEMS, HOME_PREVIEW_COUNT } from "./starter-items.js";
-import { isAdminEmail } from "./admin-emails.js";
 
 const notConfiguredEl = document.getElementById("not-configured");
 const loginView = document.getElementById("login-view");
@@ -91,8 +90,8 @@ function initAuth() {
     loginError.classList.remove("is-visible");
     resetStatus.classList.remove("is-visible");
     // Lowercased because phone keyboards commonly auto-capitalize the first
-    // letter of an email field (Emailbottles@... instead of emailbottles@...),
-    // which happens far more often on mobile than when typing on a desktop.
+    // letter of an email field (Owner@... instead of owner@...), which
+    // happens far more often on mobile than when typing on a desktop.
     const email = document.getElementById("login-email").value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
     const submitBtn = loginForm.querySelector('button[type="submit"]');
@@ -145,49 +144,58 @@ function initAuth() {
     }
 
     // Being signed in is NOT enough — anyone can create an account against
-    // a Firebase project. Only UIDs present in the `admins` collection
-    // (added from the Firebase Console) can manage the site. The security
-    // rules enforce this too; this check just avoids showing a dashboard
-    // where every action would fail.
-    //
-    // Two ways to qualify. The email allowlist (js/admin-emails.js) is checked
-    // first and needs no database round-trip at all, which keeps the owner's
-    // own access off the fragile path: a UID is 28 random characters that
-    // change every time an account is recreated, and the console truncates
-    // them, so keeping a document ID matched to one by hand is a recurring
-    // source of lockouts.
-    //
-    // The `admins` collection is still honoured, so any UID already configured
-    // there keeps working and additional people can be added that way.
-    //
-    // Three outcomes, not two: authorized, not authorized, and "couldn't ask".
-    // They used to collapse into one "No Access" screen, which meant a rules
-    // or connection problem was reported as a permission problem.
-    let isAdmin = isAdminEmail(user.email);
-    let checkError = null;
-    if (!isAdmin) {
-      try {
-        const adminDoc = await getDoc(doc(db, "admins", user.uid));
-        isAdmin = adminDoc.exists();
-      } catch (err) {
-        console.error("Couldn't verify admin access:", err);
-        checkError = err;
-      }
-    }
+    // a Firebase project. Authorization is decided by the security rules,
+    // and this asks them rather than keeping a second copy of the answer in
+    // the browser. See checkAdminAccess.
+    const access = await checkAdminAccess(user);
 
-    if (!isAdmin) {
-      showDenied(user, checkError);
+    if (!access.allowed) {
+      showDenied(user, access.error);
       return;
     }
 
     showView("dashboard");
     userEmailEl.textContent = user.email;
     initTabs();
-    initAccount(user);
+    initAccount(user, access.profile);
     loadProducts();
     loadSiteImageSlots();
     loadInquiries();
   });
+}
+
+// Works out whether this account may manage the site — by asking Firestore,
+// not by consulting a list shipped in the page.
+//
+// Anything the browser holds to make this decision is public: it is in the
+// downloaded source, and in a public repository besides. An allowlist there
+// leaks whose accounts are worth attacking while adding no protection at all,
+// since the rules are the only thing that can actually stop a request.
+//
+// So this reads the one document whose rule is exactly "is this person an
+// admin, and is it their own": adminProfile/{uid}. The read succeeding means
+// authorized; permission-denied means not. Both routes in the rules — the
+// email list and the `admins` collection — are covered automatically, because
+// the rule for this path already accepts either.
+//
+// The document itself need not exist. Firestore permits reading a missing
+// document you would be allowed to read, so a brand-new admin is allowed
+// through and the returned snapshot is reused by initAccount rather than
+// costing a second read.
+async function checkAdminAccess(user) {
+  try {
+    const profile = await getDoc(doc(db, "adminProfile", user.uid));
+    return { allowed: true, profile, error: null };
+  } catch (err) {
+    // A refusal is a definite "not an admin" and gets the plain No Access
+    // screen. Anything else — offline, rules broken, SDK blocked — is a
+    // failure to determine the answer, which is a different message.
+    if (err.code === "permission-denied") {
+      return { allowed: false, profile: null, error: null };
+    }
+    console.error("Couldn't verify admin access:", err);
+    return { allowed: false, profile: null, error: err };
+  }
 }
 
 // Fills in the "No Access" screen. If the admin lookup threw rather than
@@ -318,19 +326,13 @@ function initTabs() {
 
 // ---------- Account / password ----------
 
-async function initAccount(user) {
+// `profile` is the snapshot already fetched by checkAdminAccess — the access
+// check and this banner want the same document, so it is read once.
+async function initAccount(user, profile) {
   // Nudge the owner to replace the temporary password they were handed,
   // until they've actually changed it once.
-  try {
-    const profile = await getDoc(doc(db, "adminProfile", user.uid));
-    if (!profile.exists() || !profile.data().passwordChangedAt) {
-      passwordBanner.style.display = "block";
-    } else {
-      passwordBanner.style.display = "none";
-    }
-  } catch (err) {
-    console.error("Couldn't read admin profile:", err);
-  }
+  const changed = profile && profile.exists() && profile.data().passwordChangedAt;
+  passwordBanner.style.display = changed ? "none" : "block";
 
   const form = document.getElementById("password-form");
   if (form.dataset.ready) return;
