@@ -112,27 +112,20 @@ function initAuth() {
     }
 
     // Being signed in is NOT enough — anyone can create an account against
-    // a Firebase project. Only UIDs present in the `admins` collection
-    // (added from the Firebase Console) can manage the site. The security
-    // rules enforce this too; this check just avoids showing a dashboard
-    // where every action would fail.
-    let isAdmin = false;
-    try {
-      const adminDoc = await getDoc(doc(db, "admins", user.uid));
-      isAdmin = adminDoc.exists();
-    } catch (err) {
-      console.error("Couldn't verify admin access:", err);
-    }
+    // a Firebase project. Authorization is decided by the security rules,
+    // and this asks them rather than keeping a second copy of the answer in
+    // the browser. See checkAdminAccess.
+    const access = await checkAdminAccess(user);
 
-    if (!isAdmin) {
-      showView("denied");
+    if (!access.allowed) {
+      showDenied(user, access.error);
       return;
     }
 
     showView("dashboard");
     userEmailEl.textContent = user.email;
     initTabs();
-    initAccount(user);
+    initAccount(user, access.profile);
     loadProducts();
     loadInquiries();
   });
@@ -162,19 +155,87 @@ function initTabs() {
 
 // ---------- Account / password ----------
 
-async function initAccount(user) {
-  // Nudge the owner to replace the temporary password they were handed,
-  // until they've actually changed it once.
+// Works out whether this account may manage the site — by asking Firestore,
+// not by consulting a list shipped in the page.
+//
+// Anything the browser holds to make this decision is public: it is in the
+// downloaded source. An allowlist there leaks whose accounts are worth
+// attacking while adding no protection at all, since the rules are the only
+// thing that can actually stop a request.
+//
+// So this reads the one document whose rule is exactly "is this person an
+// admin, and is it their own": adminProfile/{uid}. The read succeeding means
+// authorized; permission-denied means not. Both routes in the rules — the
+// email list and the `admins` collection — are covered automatically.
+//
+// The document itself need not exist. Firestore permits reading a missing
+// document you would be allowed to read, so a brand-new admin is allowed
+// through and the snapshot is reused by initAccount rather than costing a
+// second read.
+async function checkAdminAccess(user) {
   try {
     const profile = await getDoc(doc(db, "adminProfile", user.uid));
-    if (!profile.exists() || !profile.data().passwordChangedAt) {
-      passwordBanner.style.display = "block";
-    } else {
-      passwordBanner.style.display = "none";
-    }
+    return { allowed: true, profile, error: null };
   } catch (err) {
-    console.error("Couldn't read admin profile:", err);
+    // A refusal is a definite "not an admin" and gets the plain No Access
+    // screen. Anything else — offline, rules broken, SDK blocked — is a
+    // failure to determine the answer, which is a different message.
+    if (err.code === "permission-denied") {
+      return { allowed: false, profile: null, error: null };
+    }
+    console.error("Couldn't verify admin access:", err);
+    return { allowed: false, profile: null, error: err };
   }
+}
+
+// Fills in the "No Access" screen. If the admin lookup threw rather than
+// simply coming back empty, say so plainly and name the likely cause — the
+// account and its password are demonstrably fine at this point, so pointing
+// at authorization would be actively misleading.
+function showDenied(user, err) {
+  const title = document.getElementById("denied-title");
+  const message = document.getElementById("denied-message");
+  const detail = document.getElementById("denied-detail");
+
+  detail.style.display = "block";
+  detail.textContent = `Signed in as ${user.email} · User UID: ${user.uid}`
+    + (err ? ` · (${err.code || "unknown error"})` : "");
+
+  if (!err) {
+    title.textContent = "No Access";
+    message.textContent =
+      "That account is signed in, but it isn't authorized to manage this site. " +
+      "If this should be your account, the site owner needs to add you as an " +
+      "admin in the Firebase Console.";
+  } else if (err.code === "permission-denied") {
+    title.textContent = "Couldn't Check Access";
+    message.textContent =
+      "Your login worked, but the database refused to answer whether you're an " +
+      "admin. That's a Firestore Rules problem, not a password problem — publish " +
+      "the rules from firebase/firestore.rules in the Firebase Console.";
+  } else if (err.code === "unavailable" || err.code === "failed-precondition") {
+    title.textContent = "Couldn't Check Access";
+    message.textContent =
+      "Your login worked, but the site couldn't reach the database. Check your " +
+      "internet connection and reload. An ad blocker or a network that blocks " +
+      "Google services can also cause this.";
+  } else {
+    title.textContent = "Couldn't Check Access";
+    message.textContent =
+      "Your login worked, but the check for whether you're an admin failed to " +
+      "complete. Reload the page and try again.";
+  }
+
+  showView("denied");
+}
+
+// `profile` is the snapshot already fetched by checkAdminAccess — the access
+// check and this banner want the same document, so it is read once.
+async function initAccount(user, profile) {
+  // Nudge the owner to replace the temporary password they were handed,
+  // until they've actually changed it once.
+  const changed = profile && profile.exists() && profile.data().passwordChangedAt;
+  passwordBanner.style.display = changed ? "none" : "block";
 
   const form = document.getElementById("password-form");
   if (form.dataset.ready) return;

@@ -1092,19 +1092,29 @@ def self_check(out_dir: Path, cfg: dict) -> list:
 
     if rules_path.exists():
         rules_text = rules_path.read_text(encoding="utf-8")
-        if "isAdmin" not in rules_text or "admins/" not in rules_text:
+        missing_rules_bits = [
+            needle for needle in ("isAdmin", "isAdminEmail", "admins/")
+            if needle not in rules_text
+        ]
+        if missing_rules_bits:
             warnings.append(
-                "firebase/firestore.rules: doesn't reference an isAdmin()/`admins` allowlist — "
-                "this generator's admin.js expects that security model. If firestore.rules was "
-                "updated upstream, re-sync tools/templates/firebase/firestore.rules."
+                "firebase/firestore.rules: doesn't reference the expected admin allowlist "
+                f"({', '.join(missing_rules_bits)}) — this generator's admin.js expects that "
+                "security model. If firestore.rules was updated upstream, re-sync "
+                "tools/templates/firebase/firestore.rules."
             )
     else:
         warnings.append("firebase/firestore.rules is missing from the generated output.")
 
     if admin_js_path.exists():
         admin_js_text = admin_js_path.read_text(encoding="utf-8")
+        # The dashboard asks the rules whether it may read adminProfile/{uid}
+        # rather than checking an allowlist itself, so these needles track
+        # that call — not the `admins` document lookup the check originally
+        # looked for, which the dashboard no longer performs.
         missing_admin_js_bits = [
-            needle for needle in ('doc(db, "admins"', "denied", "isAdmin")
+            needle for needle in ("checkAdminAccess", 'doc(db, "adminProfile"',
+                                  "permission-denied", "denied")
             if needle not in admin_js_text
         ]
         if missing_admin_js_bits:

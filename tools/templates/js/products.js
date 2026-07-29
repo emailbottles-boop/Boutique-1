@@ -33,23 +33,37 @@ async function loadProducts() {
   }
 }
 
+// Item text is typed by the owner in the dashboard and stored in Firestore,
+// so it is not attacker-controlled — but it still must be escaped before being
+// built into HTML. An unescaped ampersand in an ordinary name renders wrong,
+// and a double quote in a name closes the alt attribute early, which turns a
+// typo into markup injection.
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
 function productCardHTML(product) {
-  const tag = product.tag ? `<span class="product-card__tag">${product.tag}</span>` : "";
+  const name = escapeHtml(product.name);
+  const tag = product.tag
+    ? `<span class="product-card__tag">${escapeHtml(product.tag)}</span>`
+    : "";
 
   const image = product.photoUrl
-    ? `<img src="${product.photoUrl}" alt="${product.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />`
-    : `<div class="placeholder-img"><div class="placeholder-img__inner">Photo Coming Soon<br>${product.name}</div></div>`;
+    ? `<img src="${escapeHtml(product.photoUrl)}" alt="${name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />`
+    : `<div class="placeholder-img"><div class="placeholder-img__inner">Photo Coming Soon<br>${name}</div></div>`;
 
   return `
-    <div class="product-card" data-category="${product.category}">
+    <div class="product-card" data-category="${escapeHtml(product.category)}">
       <div class="product-card__image">
         ${image}
       </div>
       <div class="product-card__body">
         ${tag}
-        <h3>${product.name}</h3>
-        <div class="product-card__price">${product.price}</div>
-        <a class="btn btn--outline btn--small btn--block" href="contact.html?item=${encodeURIComponent(product.name)}">@@CTA_CONTACT_LABEL@@</a>
+        <h3>${name}</h3>
+        <div class="product-card__price">${escapeHtml(product.price)}</div>
+        <a class="btn btn--outline btn--small btn--block" href="contact.html?item=${encodeURIComponent(product.name ?? "")}">@@CTA_CONTACT_LABEL@@</a>
       </div>
     </div>
   `;
@@ -64,7 +78,7 @@ function attachImageFallbacks(container) {
       () => {
         const placeholder = document.createElement("div");
         placeholder.className = "placeholder-img";
-        placeholder.innerHTML = `<div class="placeholder-img__inner">Photo Coming Soon<br>${img.alt}</div>`;
+        placeholder.innerHTML = `<div class="placeholder-img__inner">Photo Coming Soon<br>${escapeHtml(img.alt)}</div>`;
         img.replaceWith(placeholder);
       },
       { once: true }

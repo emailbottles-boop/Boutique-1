@@ -17,11 +17,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("#order-form");
   if (!form) return;
 
+  // URLSearchParams already percent-decodes, so this value is the finished
+  // string. Decoding it a second time threw a URIError on any name containing
+  // a literal percent sign — "50% Off" arrives here already decoded, and
+  // "% O" is not a valid escape sequence. That error propagated out of this
+  // handler, so the submit listener below was never attached and the form
+  // silently stopped working for exactly the items most likely to be asked
+  // about.
   const params = new URLSearchParams(window.location.search);
   const item = params.get("item");
   const itemField = form.querySelector("#item");
   if (item && itemField) {
-    itemField.value = decodeURIComponent(item);
+    itemField.value = item;
   }
 
   const status = form.querySelector(".form-status");

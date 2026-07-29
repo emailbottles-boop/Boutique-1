@@ -244,6 +244,22 @@
 }
 .admin-banner .admin-link-btn { margin-top: 0; font-size: inherit; }
 
+/* The signed-in email and UID under the "No Access" screen. Monospaced so a
+   UID can be compared character by character against the Firebase Console
+   without l/1 and O/0 being a guessing game. */
+.admin-denied-detail {
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(43, 37, 35, 0.05);
+  border-radius: var(--radius);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--color-charcoal-soft);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
 .admin-banner {
   background: var(--color-blush);
   color: var(--color-charcoal);
