@@ -73,17 +73,22 @@ straight from the visitor's browser, so it works regardless of who serves the HT
 4. **Authentication** → Sign-in method → enable **Email/Password**. Then go to the
    **Users** tab → Add user → enter the owner's email address and a **temporary
    password** (Firebase requires at least 6 characters — e.g. `Boutique2026!`).
-   Copy the **User UID** it generates; you need it in the next step.
-5. **Firestore Database** → Start collection → collection ID `admins` → Document ID
-   = the **User UID** from step 4 → add any field you like (e.g. `note` = `owner`)
-   → Save. **This step is what actually grants access** — see the security note below.
+   Note the email address — step 7 is what grants it access.
+5. *(Optional — only for granting access to someone **without** editing the rules;
+   see "Adding another admin later". The owner does not need this.)*
 6. **Project settings** (gear icon) → General → "Your apps" → click the `</>` (Web)
    icon → register an app (nickname doesn't matter; leave "Also set up Firebase
    Hosting" UNCHECKED — the site is hosted on GitHub Pages, so Firebase Hosting
    would just be an unused extra) → copy the `firebaseConfig` object it gives you into
    `js/firebase-config.js`, replacing the placeholder values.
 7. **Firestore Database** → **Rules** tab → paste in the contents of
-   `firebase/firestore.rules` → Publish.
+   `firebase/firestore.rules`, **replacing the placeholder `owner@example.com`
+   with the owner's real email address from step 4** → Publish.
+   **This step is what actually grants access** — see the security note below.
+
+   Leave the real address out of the copy committed to this repo if it is public.
+   The rules stored in Firebase are what enforce access, and they are only
+   editable from the Console.
 8. *(Skip — no Storage bucket to configure. `firebase/storage.rules` is kept only
    in case you enable Storage later; see the file's header.)*
 9. Add your GitHub Pages domain to **Authentication → Settings → Authorized
@@ -95,21 +100,40 @@ straight from the visitor's browser, so it works regardless of who serves the HT
 Once products are added in the dashboard, they replace the demo listings on the
 public site automatically.
 
-### Security: why step 5 matters
+### Security: why step 7 matters
 
 Firebase's Email/Password sign-in lets **anyone** create an account against the
 project — the API key in `firebase-config.js` is public by design and can't be
 hidden. So "is this user logged in?" is not a safe permission check on its own.
 
-The security rules therefore require the user's UID to exist in the `admins`
-Firestore collection, and those documents can only be created from the Firebase
-Console (the rules forbid writing them from the website). A stranger who signs
-themselves up lands on a "No Access" screen and can't read inquiries or change
-anything.
+The security rules therefore require the account to be on an allowlist. There are
+two ways to be on it, and either is enough:
 
-**If you skip step 5, nobody — including the owner — can edit the site.** If you
+- **Its email is named in the rules** (`isAdminEmail`, step 7). This is the route
+  for the owner.
+- **Its UID has a document in the `admins` collection** (step 5). Kept because it
+  grants access without republishing rules.
+
+Neither can be granted from the website: the email list lives inside the rules,
+which are only editable from the Console, and the rules forbid writing `admins`
+documents at all. A stranger who signs themselves up lands on a "No Access" screen
+and can't read inquiries or change anything.
+
+**If you skip step 7, nobody — including the owner — can edit the site.** If you
 were to loosen the rules to `request.auth != null` instead, anyone on the internet
 could sign up and take over the site. Don't.
+
+**Why email rather than UID.** A UID is 28 random characters, it is regenerated
+every time an account is deleted and recreated, and the Console truncates it in the
+user list. Keeping a document ID matched to one by hand is a reliable way to lock
+the owner out, with nothing visibly wrong in the Console to explain it. An email is
+readable, survives account recreation, and a mistake in one is obvious.
+
+**The browser is never trusted with the answer.** `js/admin.js` does not carry a
+copy of the allowlist — it asks Firestore whether it may read `adminProfile/{uid}`,
+a path the rules permit only for an admin reading their own document, and treats
+the refusal as the answer. Anything shipped to the browser is public, so a list
+there would leak which accounts are worth attacking while protecting nothing.
 
 Other protections already in place:
 - Product photos are validated as real images and size-capped well below
@@ -171,8 +195,16 @@ in this repo, in the database, or anywhere in the site's code.
 
 ### Adding another admin later
 
-Repeat steps 4–5 for the new person: create their user in Authentication, then add
-their UID as a document in the `admins` collection.
+Create their user in Authentication (step 4), then grant access either way:
+
+- **Add their email to the rules** — Firestore → Rules → add the address to the
+  list in `isAdminEmail` → Publish. Readable, and obvious later who has access.
+- **Add their UID to `admins`** — Firestore → `admins` → Add document → Document ID
+  = their **User UID**, copied and pasted, never retyped → add any field (e.g.
+  `note` = `manager`) → Save. No rules republish needed.
+
+To remove someone, delete their line from the rules or their `admins` document —
+and disable or delete their account in Authentication.
 
 ## Replacing photos without Firebase (no code editing required)
 
