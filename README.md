@@ -14,12 +14,13 @@ A static website for Bridget's Boutique, a women's clothing boutique in downtown
 - `js/products.js` — loads products (live from Firebase once configured, otherwise a small built-in demo list)
 - `js/contact.js` — handles the contact/order form submission
 - `js/admin.js`, `js/firebase-init.js`, `js/firebase-config.js` — the admin dashboard and its Firebase connection
-- `firebase/firestore.rules` — security rules to paste into the Firebase console
-- `.nojekyll` — stops GitHub Pages processing the site through Jekyll
-- `firebase/storage.rules` — optional/unused; only needed if you ever enable Firebase Storage
+- `js/site-images.js` — loads the hero and storefront photos set from the dashboard
+- `js/starter-items.js` — the built-in demo items, shared by the site and the dashboard
 - `js/image-utils.js` — compresses photos in the browser so they fit in Firestore
+- `firebase/firestore.rules` — security rules to paste into the Firebase console
 - `404.html` — styled not-found page
 - `robots.txt` / `sitemap.xml` — SEO crawling config
+- `.nojekyll` — stops GitHub Pages processing the site through Jekyll
 - `images/` — site images
 
 ## Real business info already wired up
@@ -89,8 +90,8 @@ straight from the visitor's browser, so it works regardless of who serves the HT
    Leave the real address out of the copy committed to this repo if it is public.
    The rules stored in Firebase are what enforce access, and they are only
    editable from the Console.
-8. *(Skip — no Storage bucket to configure. `firebase/storage.rules` is kept only
-   in case you enable Storage later; see the file's header.)*
+8. *(Skip — no Storage bucket to configure. Photos live in Firestore; see
+   "Where photos are stored" below.)*
 9. Add your GitHub Pages domain to **Authentication → Settings → Authorized
    domains** (see "Deploying" below) — the login will not work without this.
 10. Visit `yoursite.com/admin.html` and log in with the email + temporary password
@@ -161,9 +162,8 @@ inside Firestore's 1 MB per-document limit, and inside the free tier's 1 GiB tot
 - No billing account, no credit card, genuinely free.
 - Photo uploads work normally in the dashboard — the owner sees no difference.
 - Photos are served from the database rather than a CDN. Fine for a catalog of a
-  few dozen items; if the shop ever grows into the hundreds, switching to Storage
-  would be the upgrade (the rules for it are already written in
-  `firebase/storage.rules`).
+  few dozen items; if the shop ever grows into the hundreds, moving photos to
+  Firebase Storage would be the upgrade.
 
 ### How the admin password is protected
 
@@ -294,9 +294,8 @@ is exactly why it's easy to miss until the deployed site breaks.
    page's `<head>` (canonical/OG/Twitter/JSON-LD), plus `robots.txt` and
    `sitemap.xml`, to the real domain.
 
-### Optional: Firebase Hosting instead
+### Note on hosting
 
-`firebase.json`, `.firebaserc`, and `.github/workflows/firebase-deploy.yml` are
-included in case you ever want to serve the site from Firebase Hosting instead of
-Pages. The workflow is set to manual-trigger only, so it will not run (or fail)
-on pushes. Nothing needs to be done with these files while using Pages.
+The site is served by GitHub Pages, and Firebase supplies only the database and
+the login. The two are independent — the dashboard reaches Firebase straight
+from the browser, so it works regardless of who serves the HTML.
