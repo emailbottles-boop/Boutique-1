@@ -187,6 +187,25 @@ function showDenied(user, err) {
   const title = document.getElementById("denied-title");
   const message = document.getElementById("denied-message");
   const detail = document.getElementById("denied-detail");
+  const copyBtn = document.getElementById("copy-uid-btn");
+
+  copyBtn.style.display = "inline-flex";
+  copyBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(user.uid);
+      copyBtn.textContent = "Copied — now paste it as the document ID";
+    } catch {
+      // Clipboard access can be refused (permissions, insecure context).
+      // Selecting the text is the fallback that always works.
+      const range = document.createRange();
+      range.selectNodeContents(detail);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      copyBtn.textContent = "Selected — press Ctrl+C to copy";
+    }
+    setTimeout(() => { copyBtn.textContent = "Copy UID"; }, 4000);
+  };
 
   if (!err) {
     title.textContent = "No Access";

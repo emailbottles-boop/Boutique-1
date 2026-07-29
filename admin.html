@@ -87,6 +87,11 @@
       admin in the Firebase Console.
     </p>
     <p id="denied-detail" class="admin-denied-detail" style="display:none;"></p>
+    <!-- Copying the UID by hand is how this goes wrong: a stray trailing
+         space, or an l/1/I read off a proportional font, produces a document
+         ID that looks identical in the console but never matches. This
+         button puts the exact string on the clipboard. -->
+    <button id="copy-uid-btn" class="btn btn--outline btn--block" style="display:none;">Copy UID</button>
     <button id="denied-logout-btn" class="btn btn--primary btn--block">Sign Out</button>
   </div>
 
