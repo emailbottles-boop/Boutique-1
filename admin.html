@@ -74,13 +74,19 @@
     </p>
   </div>
 
+  <!-- Covers two different situations: the account genuinely isn't on the
+       admin list, and the check itself couldn't run. admin.js fills in the
+       heading and body text to say which, because telling someone they
+       aren't authorized when really the database refused the question sends
+       them looking in entirely the wrong place. -->
   <div id="denied-view" class="admin-login" style="display:none;">
-    <h1>No Access</h1>
-    <p>
+    <h1 id="denied-title">No Access</h1>
+    <p id="denied-message">
       That account is signed in, but it isn't authorized to manage this site.
       If this should be your account, the site owner needs to add you as an
       admin in the Firebase Console.
     </p>
+    <p id="denied-detail" class="admin-denied-detail" style="display:none;"></p>
     <button id="denied-logout-btn" class="btn btn--primary btn--block">Sign Out</button>
   </div>
 

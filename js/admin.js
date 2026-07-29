@@ -148,16 +148,24 @@ function initAuth() {
     // (added from the Firebase Console) can manage the site. The security
     // rules enforce this too; this check just avoids showing a dashboard
     // where every action would fail.
+    //
+    // Three outcomes, not two: on the list, not on the list, and "couldn't
+    // ask". They used to collapse into one "No Access" screen, which meant a
+    // rules or connection problem was reported as a permission problem and
+    // sent the owner hunting through the admin list for a document that was
+    // sitting there correctly the whole time.
     let isAdmin = false;
+    let checkError = null;
     try {
       const adminDoc = await getDoc(doc(db, "admins", user.uid));
       isAdmin = adminDoc.exists();
     } catch (err) {
       console.error("Couldn't verify admin access:", err);
+      checkError = err;
     }
 
     if (!isAdmin) {
-      showView("denied");
+      showDenied(user, checkError);
       return;
     }
 
@@ -169,6 +177,60 @@ function initAuth() {
     loadSiteImageSlots();
     loadInquiries();
   });
+}
+
+// Fills in the "No Access" screen. If the admin lookup threw rather than
+// simply coming back empty, say so plainly and name the likely cause — the
+// account and its password are demonstrably fine at this point, so pointing
+// at authorization would be actively misleading.
+function showDenied(user, err) {
+  const title = document.getElementById("denied-title");
+  const message = document.getElementById("denied-message");
+  const detail = document.getElementById("denied-detail");
+
+  if (!err) {
+    title.textContent = "No Access";
+    message.textContent =
+      "That account is signed in, but it isn't authorized to manage this site. " +
+      "If this should be your account, the site owner needs to add you as an " +
+      "admin in the Firebase Console.";
+    detail.style.display = "block";
+    detail.textContent = `Signed in as ${user.email} · User UID: ${user.uid}`;
+    showView("denied");
+    return;
+  }
+
+  title.textContent = "Couldn't Check Access";
+  message.textContent = deniedErrorMessage(err.code);
+  detail.style.display = "block";
+  detail.textContent = `Signed in as ${user.email} · User UID: ${user.uid} · (${err.code || "unknown error"})`;
+  showView("denied");
+}
+
+function deniedErrorMessage(code) {
+  switch (code) {
+    case "permission-denied":
+      // Firestore's own answer was "no", which is a rules problem rather than
+      // a missing admin document. The overwhelmingly common cause is a
+      // database still on the console's test-mode rules, which stop allowing
+      // anything 30 days after the database is created — hence sites that
+      // work fine and then break one day with nothing having changed.
+      return "Your login worked, but the database refused to answer whether you're an admin. " +
+        "That's a Firestore Rules problem, not a password or account problem. In the Firebase " +
+        "Console open Firestore Database → Rules and publish the rules from firebase/firestore.rules. " +
+        "If the rules there contain a date, they were temporary test rules and have now expired.";
+    case "unavailable":
+    case "failed-precondition":
+      return "Your login worked, but the site couldn't reach the database to check your access. " +
+        "Check your internet connection and reload. An ad blocker or a network that blocks Google " +
+        "services can also cause this.";
+    case "unauthenticated":
+      return "Your login worked, but the database didn't accept the session. Sign out, reload the " +
+        "page, and log in again.";
+    default:
+      return "Your login worked, but the check for whether you're an admin failed to complete. " +
+        "Reload the page and try again — the browser console has the details.";
+  }
 }
 
 // Firebase lumps very different problems into the same failed sign-in. Spell
