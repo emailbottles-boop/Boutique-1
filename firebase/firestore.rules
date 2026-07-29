@@ -8,10 +8,12 @@ rules_version = '2';
 // by design. So "is this person logged in?" is NOT a safe permission check
 // on its own.
 //
-// Instead, write access requires the user's UID to be listed in the
-// `admins` collection. Those documents can only be created from the
-// Firebase Console (rules below forbid writing them from the website), so
-// a stranger who signs themselves up gets an account that can do nothing.
+// Instead, write access requires the account to be on an allowlist: either
+// its email address is named in these rules, or its UID has a document in
+// the `admins` collection. Neither can be granted from the website — the
+// email list lives here and these rules are only editable in the Console,
+// and the rules below forbid writing `admins` documents entirely. So a
+// stranger who signs themselves up gets an account that can do nothing.
 
 service cloud.firestore {
   match /databases/{database}/documents {
