@@ -152,17 +152,18 @@ img { max-width: 100%; display: block; }
 .nav__brand {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 1.3rem;
-  letter-spacing: 0.03em;
+  font-size: 1.55rem;
+  letter-spacing: 0.02em;
+  color: var(--color-charcoal);
 }
 
 /* flex-shrink: 0 because .nav__brand is a flex container — without it the
    logo is squeezed horizontally while its height stays fixed, turning a
    circular mark into an oval as soon as the header runs short of room. */
-.nav__brand img { height: 36px; width: 36px; flex-shrink: 0; object-fit: contain; }
+.nav__brand img { height: 42px; width: 42px; flex-shrink: 0; object-fit: contain; }
 
 .nav__links {
   display: flex;
