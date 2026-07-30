@@ -481,16 +481,6 @@
 }
 .admin-banner .admin-link-btn { margin-top: 0; font-size: inherit; }
 
-.admin-login__tip {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid rgba(43, 37, 35, 0.1);
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: var(--color-charcoal-soft);
-  text-align: left;
-}
-
 /* The signed-in email and UID under the "No Access" screen. Monospaced so a
    UID can be compared character by character against the Firebase Console
    without l/1 and O/0 being a guessing game. */

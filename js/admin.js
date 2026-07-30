@@ -236,8 +236,7 @@ function deniedErrorMessage(code) {
     case "unavailable":
     case "failed-precondition":
       return "Your login worked, but the site couldn't reach the database to check your access. " +
-        "Check your internet connection and reload. An ad blocker or a network that blocks Google " +
-        "services can also cause this.";
+        "Check your internet connection and reload.";
     case "unauthenticated":
       return "Your login worked, but the database didn't accept the session. Sign out, reload the " +
         "page, and log in again.";
@@ -257,10 +256,9 @@ function loginErrorMessage(code) {
       return "That email and password don't match an account. Check for typos and try again.";
     case "auth/invalid-credential":
       // We already retried once automatically (see signInWithRetry) before
-      // this message is ever shown. Kept short and single-action on purpose
-      // — the fuller explanation lives in the standing tip below the form,
-      // not stacked into the error text itself.
-      return "That didn't work. Try opening this page in a Private/Incognito window and logging in there.";
+      // this message is ever shown, so by this point the credentials really
+      // are being rejected. Keep it to the one action worth taking.
+      return "That email and password don't match an account. Check for typos and try again.";
     case "auth/invalid-email":
       return "That doesn't look like a valid email address.";
     case "auth/unauthorized-domain":
