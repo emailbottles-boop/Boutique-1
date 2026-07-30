@@ -20,14 +20,23 @@ service cloud.firestore {
 
     // Who counts as an admin. Two ways to qualify, and either is enough.
     //
-    // 1. Your email is on the list below. Mirror of js/admin-emails.js.
-    //    Preferred for the shop owner: an email is readable, it survives
-    //    deleting and recreating the account, and a typo in one is visible.
-    // 2. Your UID has a document in the `admins` collection. Kept because it
-    //    already works, and because it lets someone be added without editing
-    //    and republishing these rules.
+    // 1. The owner address named below. This is the bootstrap — it works even
+    //    with an empty database, so there is no way to lock everyone out.
+    // 2. A document in `adminEmails` whose **ID is the person's email
+    //    address**. This is how people get added and removed day to day: no
+    //    rules edit, no republish, and it takes effect immediately.
     //
-    // Emails are compared lowercased so a capitalized sign-in still matches.
+    // Both are keyed on the email address rather than the account's UID, and
+    // that is the whole point. A UID is 28 random characters, it is
+    // regenerated whenever an account is deleted and recreated, and the
+    // Console truncates it in the user list. Worse, when a UID-keyed document
+    // is wrong — a mis-copied character, an invisible character riding along
+    // with the paste — the result is a document that looks completely correct
+    // and grants nothing, with no error anywhere to say so. An email address
+    // is readable, so a wrong one is visible.
+    //
+    // Emails are compared lowercased, so create the documents with lowercase
+    // IDs and a capitalised sign-in still matches.
     //
     // IMPORTANT: replace the placeholder below with the real owner address
     // BEFORE publishing, and leave the real address out of this file when
@@ -35,18 +44,22 @@ service cloud.firestore {
     // published here tells an attacker exactly which account to go after
     // while protecting nothing — the rules stored in Firebase are what
     // enforce access, and those are only editable from the Console.
-    function isAdminEmail() {
-      return request.auth != null
-        && request.auth.token.email != null
-        && request.auth.token.email.lower() in [
-             'owner@example.com'
-           ];
-    }
-
     function isAdmin() {
       return request.auth != null
-        && (isAdminEmail()
-            || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+        && (
+          // 1. The bootstrap owner address.
+          (request.auth.token.email != null
+            && request.auth.token.email.lower() in [
+                 'owner@example.com'
+               ])
+          // 2. A document whose ID is their email address.
+          || (request.auth.token.email != null
+            && exists(/databases/$(database)/documents/adminEmails/$(request.auth.token.email.lower())))
+          // 3. A document whose ID is their Auth UID. Kept so an existing
+          //    setup keeps working, but prefer route 2 — see the note above
+          //    about why a UID-keyed document fails invisibly.
+          || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
     }
 
     // Basic shape/size checks so the public contact form can't be used to
@@ -72,6 +85,16 @@ service cloud.firestore {
 
     // The admin allowlist. Add a document here (ID = the user's Firebase
     // Auth UID) to grant someone admin access. Never writable from the site.
+    // The admin allowlist. Document ID = the person's email address,
+    // lowercase. Add one from the Console to grant access; delete it to
+    // revoke. Never writable from the website, so nobody can promote
+    // themselves — including someone who signs up an account of their own.
+    match /adminEmails/{email} {
+      allow read, write: if false;
+    }
+
+    // The older UID-keyed allowlist, still honoured. Same rules: Console only,
+    // never writable from the site.
     match /admins/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;

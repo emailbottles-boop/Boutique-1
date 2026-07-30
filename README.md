@@ -114,15 +114,24 @@ hidden. So "is this user logged in?" is not a safe permission check on its own.
 The security rules therefore require the account to be on an allowlist. There are
 two ways to be on it, and either is enough:
 
-- **Its email is named in the rules** (`isAdminEmail`, step 7). This is the route
-  for the owner.
-- **Its UID has a document in the `admins` collection** (step 5). Kept because it
-  grants access without republishing rules.
+- **Its email is the owner address named in the rules** (step 7). This is the
+  bootstrap — it works even with an empty database, so nobody can be locked out.
+- **Its email has a document in the `adminEmails` collection**, where the
+  document ID *is* the email address. This is the day-to-day route: no rules
+  edit, no republish, effective immediately.
 
-Neither can be granted from the website: the email list lives inside the rules,
-which are only editable from the Console, and the rules forbid writing `admins`
-documents at all. A stranger who signs themselves up lands on a "No Access" screen
-and can't read inquiries or change anything.
+Neither can be granted from the website: the owner address lives inside the
+rules, which are only editable from the Console, and the rules forbid writing
+`adminEmails` documents at all. A stranger who signs themselves up lands on a
+"No Access" screen and can't read inquiries or change anything.
+
+**Why email and not the account's UID.** A UID is 28 random characters, it is
+regenerated whenever an account is deleted and recreated, and the Console
+truncates it in the user list. When a UID-keyed document is wrong — one
+mis-copied character, or an invisible character that rode along with the paste
+— the result is a document that looks perfectly correct and grants nothing,
+with no error anywhere to explain it. An email address is readable, so a wrong
+one can actually be seen.
 
 **If you skip step 7, nobody — including the owner — can edit the site.** If you
 were to loosen the rules to `request.auth != null` instead, anyone on the internet
@@ -203,16 +212,22 @@ in this repo, in the database, or anywhere in the site's code.
 
 ### Adding another admin later
 
-Create their user in Authentication (step 4), then grant access either way:
+Two steps, both in the Console, no code and no rules edit:
 
-- **Add their email to the rules** — Firestore → Rules → add the address to the
-  list in `isAdminEmail` → Publish. Readable, and obvious later who has access.
-- **Add their UID to `admins`** — Firestore → `admins` → Add document → Document ID
-  = their **User UID**, copied and pasted, never retyped → add any field (e.g.
-  `note` = `manager`) → Save. No rules republish needed.
+1. **Authentication → Users → Add user** — their email address and a password.
+2. **Firestore → `adminEmails` → Add document** — Document ID = **their email
+   address in lowercase**. Add any field (e.g. `note` = `manager`); Firestore
+   won't save a document with no fields at all. Save.
 
-To remove someone, delete their line from the rules or their `admins` document —
-and disable or delete their account in Authentication.
+They can log in immediately — no republish, no waiting.
+
+**To remove someone:** delete their `adminEmails` document, and disable or
+delete their account under Authentication. Access is revoked on their next
+page load.
+
+The owner address in the rules is deliberately *not* managed this way. It is
+the bootstrap that works when the collection is empty, so emptying the
+collection can never lock everyone out.
 
 ## Replacing photos without Firebase (no code editing required)
 
