@@ -468,19 +468,6 @@
   pointer-events: auto;
 }
 
-.admin-link-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-top: 1rem;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  color: var(--color-gold);
-  text-decoration: underline;
-  cursor: pointer;
-}
-.admin-banner .admin-link-btn { margin-top: 0; font-size: inherit; }
-
 /* The signed-in email and UID under the "No Access" screen. Monospaced so a
    UID can be compared character by character against the Firebase Console
    without l/1 and O/0 being a guessing game. */
@@ -495,16 +482,6 @@
   color: var(--color-charcoal-soft);
   text-align: left;
   overflow-wrap: anywhere;
-}
-
-.admin-banner {
-  background: var(--color-blush);
-  color: var(--color-charcoal);
-  border-radius: var(--radius);
-  padding: 1rem 1.25rem;
-  font-size: 0.9rem;
-  margin-bottom: 1.75rem;
-  line-height: 1.5;
 }
 
 .admin-notice {

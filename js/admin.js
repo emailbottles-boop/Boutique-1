@@ -6,9 +6,6 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
   collection,
@@ -34,7 +31,6 @@ const dashboardView = document.getElementById("dashboard-view");
 const logoutBtn = document.getElementById("logout-btn");
 const userEmailEl = document.getElementById("user-email");
 const toastEl = document.getElementById("toast");
-const passwordBanner = document.getElementById("password-banner");
 
 function showToast(message) {
   toastEl.textContent = message;
@@ -133,7 +129,6 @@ function initAuth() {
     showView("dashboard");
     userEmailEl.textContent = user.email;
     initTabs();
-    initAccount(user, access.profile);
     loadProducts();
     loadSiteImageSlots();
     loadInquiries();
@@ -156,8 +151,7 @@ function initAuth() {
 //
 // The document itself need not exist. Firestore permits reading a missing
 // document you would be allowed to read, so a brand-new admin is allowed
-// through and the returned snapshot is reused by initAccount rather than
-// costing a second read.
+// through.
 async function checkAdminAccess(user) {
   try {
     const profile = await getDoc(doc(db, "adminProfile", user.uid));
@@ -292,76 +286,6 @@ function initTabs() {
 
   document.querySelectorAll(".admin-tab").forEach((tab) => {
     tab.addEventListener("click", () => goToTab(tab.dataset.tab));
-  });
-  document.querySelectorAll("[data-goto-tab]").forEach((el) => {
-    el.addEventListener("click", () => goToTab(el.dataset.gotoTab));
-  });
-}
-
-// ---------- Account / password ----------
-
-// `profile` is the snapshot already fetched by checkAdminAccess — the access
-// check and this banner want the same document, so it is read once.
-async function initAccount(user, profile) {
-  // Nudge the owner to replace the temporary password they were handed,
-  // until they've actually changed it once.
-  const changed = profile && profile.exists() && profile.data().passwordChangedAt;
-  passwordBanner.style.display = changed ? "none" : "block";
-
-  const form = document.getElementById("password-form");
-  if (form.dataset.ready) return;
-  form.dataset.ready = "true";
-
-  const status = document.getElementById("password-status");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const current = document.getElementById("current-password").value;
-    const next = document.getElementById("new-password").value;
-    const confirm = document.getElementById("confirm-password").value;
-
-    status.classList.remove("is-visible", "form-status--success", "form-status--error");
-
-    function fail(message) {
-      status.textContent = message;
-      status.classList.add("form-status--error", "is-visible");
-    }
-
-    if (next !== confirm) return fail("The two new passwords don't match.");
-    if (next.length < 6) return fail("Your new password needs to be at least 6 characters.");
-    if (next === current) return fail("That's the same as your current password — pick a new one.");
-
-    const submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Updating…";
-
-    try {
-      // Firebase requires a recent login before changing a password.
-      const credential = EmailAuthProvider.credential(user.email, current);
-      await reauthenticateWithCredential(user, credential);
-      await updatePassword(user, next);
-      await setDoc(
-        doc(db, "adminProfile", user.uid),
-        { passwordChangedAt: serverTimestamp() },
-        { merge: true }
-      );
-      form.reset();
-      passwordBanner.style.display = "none";
-      status.textContent = "Password updated. Use the new one next time you log in.";
-      status.classList.add("form-status--success", "is-visible");
-    } catch (err) {
-      console.error(err);
-      if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-        fail("That current password isn't right.");
-      } else if (err.code === "auth/weak-password") {
-        fail("That new password is too weak — try a longer one.");
-      } else {
-        fail("Couldn't update the password — try again.");
-      }
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Update Password";
-    }
   });
 }
 
