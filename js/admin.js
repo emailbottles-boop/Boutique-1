@@ -6,7 +6,6 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  sendPasswordResetEmail,
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
@@ -83,12 +82,10 @@ async function signInWithRetry(email, password) {
 function initAuth() {
   const loginForm = document.getElementById("login-form");
   const loginError = document.getElementById("login-error");
-  const resetStatus = document.getElementById("reset-status");
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     loginError.classList.remove("is-visible");
-    resetStatus.classList.remove("is-visible");
     // Lowercased because phone keyboards commonly auto-capitalize the first
     // letter of an email field (Owner@... instead of owner@...), which
     // happens far more often on mobile than when typing on a desktop.
@@ -110,27 +107,6 @@ function initAuth() {
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Log In";
-    }
-  });
-
-  // "Forgot your password?" — Firebase emails a reset link, so the owner
-  // can recover on their own without anyone resetting it for them.
-  document.getElementById("forgot-password-btn").addEventListener("click", async () => {
-    const email = document.getElementById("login-email").value.trim().toLowerCase();
-    resetStatus.classList.remove("is-visible", "form-status--success", "form-status--error");
-    if (!email) {
-      resetStatus.textContent = "Type your email address above first, then tap this again.";
-      resetStatus.classList.add("form-status--error", "is-visible");
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      resetStatus.textContent = `Sent — check ${email} for a link to set a new password.`;
-      resetStatus.classList.add("form-status--success", "is-visible");
-    } catch (err) {
-      console.error(err);
-      resetStatus.textContent = "Couldn't send the reset email — double-check the address.";
-      resetStatus.classList.add("form-status--error", "is-visible");
     }
   });
 
@@ -278,7 +254,7 @@ function loginErrorMessage(code) {
   switch (code) {
     case "auth/wrong-password":
     case "auth/user-not-found":
-      return "That email and password don't match an account. Check for typos, or use \"Forgot your password?\" below.";
+      return "That email and password don't match an account. Check for typos and try again.";
     case "auth/invalid-credential":
       // We already retried once automatically (see signInWithRetry) before
       // this message is ever shown. Kept short and single-action on purpose
