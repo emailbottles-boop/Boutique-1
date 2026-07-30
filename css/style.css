@@ -310,34 +310,11 @@ img { max-width: 100%; display: block; }
   font-size: 1.05rem;
 }
 
-/* ---- Hero hours ----
-   Two real columns: days left, times right, both aligned down the page.
-   The row <div>s use display: contents so the dt/dd pairs become direct
-   grid items - otherwise each row is its own formatting context and the
-   times only line up by accident of label length. */
-
 .hero__hours {
-  display: grid;
-  grid-template-columns: auto auto;
-  justify-content: center;
-  column-gap: 2.5rem;
-  row-gap: 0.7rem;
-  margin: 2.25rem 0;
-}
-.hero__hours > div { display: contents; }
-.hero__hours dt {
-  text-align: right;
+  margin: 1.75rem 0;
   font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  color: rgba(250, 246, 241, 0.8);
-}
-.hero__hours dd {
-  margin: 0;
-  text-align: left;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-white);
-  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  color: rgba(250, 246, 241, 0.9);
 }
 
 .hero .btn-row { justify-content: center; }
