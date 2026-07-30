@@ -142,8 +142,12 @@ Other protections already in place:
 - Contact form submissions are shape- and length-checked, so the form can't be
   used to dump arbitrary data into the database.
 - `admin.html` is excluded from search engines (`robots.txt` + a `noindex` tag).
-- The owner can self-recover with "Forgot your password?" on the login screen —
-  Firebase emails them a reset link, so you never need to hold their password.
+
+**If the owner forgets their password**, reset it from the Firebase Console:
+Authentication → Users → the ⋮ menu beside their account → **Reset password**.
+Deleting and recreating the account works too, and is safe — access is granted
+by email address, so the new account is authorized the moment it exists, with
+no UID to re-match anywhere.
 
 ### Where photos are stored (and why there's no Firebase Storage)
 
