@@ -12,4 +12,4 @@ Disallow: /
 # Allow: /
 Disallow: /admin.html
 
-Sitemap: https://www.bridgetsboutiqueenumclaw.com/sitemap.xml
+Sitemap: https://emailbottles-boop.github.io/Boutique-1/sitemap.xml
