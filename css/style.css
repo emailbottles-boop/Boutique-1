@@ -159,7 +159,10 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.03em;
 }
 
-.nav__brand img { height: 36px; width: 36px; }
+/* flex-shrink: 0 because .nav__brand is a flex container — without it the
+   logo is squeezed horizontally while its height stays fixed, turning a
+   circular mark into an oval as soon as the header runs short of room. */
+.nav__brand img { height: 36px; width: 36px; flex-shrink: 0; object-fit: contain; }
 
 .nav__links {
   display: flex;
