@@ -267,7 +267,11 @@ Only after that should the site be submitted to Google Search Console.
 ## To go fully live
 
 1. **Backend** — set up Firebase (see above) so the owner can manage products and see inquiries without touching code.
-2. **Domain** — once a real domain is live, replace the placeholder `https://www.bridgetsboutiqueenumclaw.com` in every page's `<head>` (canonical/OG/Twitter/JSON-LD tags) plus `robots.txt` and `sitemap.xml` with the actual domain.
+2. **Domain** — the site currently uses its GitHub Pages address. If a custom
+   domain is bought later, replace `https://emailbottles-boop.github.io/Boutique-1`
+   throughout (canonical/OG/Twitter/JSON-LD in every page's `<head>`, plus
+   `robots.txt` and `sitemap.xml`) — one find-and-replace — and add the new
+   domain to Firebase's Authorized domains or the admin login will break on it.
 
 ## Deploying (GitHub Pages)
 
@@ -313,7 +317,7 @@ is exactly why it's easy to miss until the deployed site breaks.
 5. **Add the new domain to Firebase's Authorized domains too** (see above), or
    the admin login will break on the custom domain even though it worked on
    `github.io`.
-6. Update the placeholder `https://www.bridgetsboutiqueenumclaw.com` in each
+6. Update the placeholder `https://emailbottles-boop.github.io/Boutique-1` in each
    page's `<head>` (canonical/OG/Twitter/JSON-LD), plus `robots.txt` and
    `sitemap.xml`, to the real domain.
 
