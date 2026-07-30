@@ -310,80 +310,37 @@ img { max-width: 100%; display: block; }
   font-size: 1.05rem;
 }
 
-/* ---- Hours ----
-   The question a visitor actually has is "can I go there now?", so the
-   answer to that leads and the week's schedule supports it. The previous
-   version set the day names at 1.7rem and the times at 0.75rem, which put
-   the emphasis on the label rather than the information. */
+/* ---- Hero hours ----
+   A plain list: day on the left, time on the right, aligned in a column the
+   eye can run straight down. No boxes, no badges — the times are the only
+   thing here that needs to be read. */
 
-.hours {
-  margin: 2rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.9rem;
-}
-
-.hours__status {
-  display: inline-flex;
-  align-items: center;
+.hero__hours {
+  margin: 2rem auto;
+  max-width: 320px;
+  display: grid;
   gap: 0.55rem;
-  margin: 0;
-  padding: 0.45rem 1.1rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(6px);
-  font-size: 0.85rem;
-  letter-spacing: 0.02em;
-  color: var(--color-white);
+  text-align: left;
 }
-.hours__status::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #8f9a8a;
-  flex-shrink: 0;
-}
-.hours__status.is-open::before {
-  background: #6fcf7f;
-  box-shadow: 0 0 0 4px rgba(111, 207, 127, 0.22);
-}
-.hours__status strong { font-weight: 600; }
-
-.hours__list {
+.hero__hours > div {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 0.75rem;
-  margin: 0;
-}
-.hours__list > div {
-  display: flex;
+  justify-content: space-between;
   align-items: baseline;
-  gap: 0.45rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.08);
+  gap: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
-.hours__list dt {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(250, 246, 241, 0.72);
+.hero__hours > div:last-child { border-bottom: none; padding-bottom: 0; }
+.hero__hours dt {
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  color: rgba(250, 246, 241, 0.85);
 }
-.hours__list dd {
+.hero__hours dd {
   margin: 0;
-  font-family: var(--font-heading);
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 1rem;
   color: var(--color-white);
-}
-/* The current day is the one line that matters today. */
-.hours__list > div.is-today {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 
 .hero .btn-row { justify-content: center; }
