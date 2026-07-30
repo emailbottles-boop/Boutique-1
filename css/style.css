@@ -800,3 +800,27 @@ textarea:focus-visible {
   letter-spacing: 0.02em;
 }
 .trust-bar__item svg { width: 20px; height: 20px; stroke: var(--color-gold); fill: none; stroke-width: 1.6; }
+
+/* ---- Legal pages (privacy policy) ----
+   Narrower than the site's usual 1140px container and left-aligned — a
+   policy is read top to bottom like a document, not scanned like a
+   marketing page, so it gets a normal reading measure instead of the
+   full-width layout used elsewhere. */
+.legal {
+  max-width: 680px;
+}
+.legal h2 {
+  margin-top: 2.25rem;
+  font-size: 1.25rem;
+}
+.legal ul {
+  margin: 0 0 1em;
+  padding-left: 1.25rem;
+}
+.legal li { margin-bottom: 0.4em; }
+.legal a { text-decoration: underline; text-underline-offset: 2px; }
+.legal__updated {
+  font-size: 0.85rem;
+  color: var(--color-charcoal-soft);
+  margin-bottom: 2rem;
+}
