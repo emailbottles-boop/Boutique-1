@@ -94,9 +94,13 @@ straight from the visitor's browser, so it works regardless of who serves the HT
    "Where photos are stored" below.)*
 9. Add your GitHub Pages domain to **Authentication → Settings → Authorized
    domains** (see "Deploying" below) — the login will not work without this.
-10. Visit `yoursite.com/admin.html` and log in with the email + temporary password
-    from step 4. The dashboard shows a banner prompting the owner to set their own
-    password under the **Account** tab — after that, only they know it.
+10. Visit `yoursite.com/admin.html` and log in with the email and password from
+    step 4. The dashboard opens straight onto Products.
+
+Passwords are managed from the Firebase Console rather than inside the
+dashboard: **Authentication → Users → ⋮ → Reset password**. With one account to
+look after, that is fewer moving parts than a self-service flow, and it keeps
+the dashboard to the two things the owner actually uses it for.
 
 Once products are added in the dashboard, they replace the demo listings on the
 public site automatically.
@@ -186,10 +190,10 @@ in this repo, in the database, or anywhere in the site's code.
 
 **Where the real risk actually is** — not the hashing, but the handoff:
 
-1. **The temporary password is sent in plain text** over email or SMS when you hand
-   it to the owner. That message is the weakest link. This is exactly why the
-   dashboard nags them to change it on first login — once they do, the password in
-   that email is dead, and nobody (including you) knows the real one.
+1. **The password is sent in plain text** over email or SMS when you hand it to
+   the owner. That message is the weakest link, and it stays valid for as long
+   as the password does. Hand it over in person or by phone where you can, and
+   reset it from the Console if that message was ever somewhere it shouldn't be.
 2. **A weak password** is still guessable no matter how well it's hashed. Encourage
    something that isn't the business name plus a year.
 3. **A committed service account key** would bypass all of the above. See
