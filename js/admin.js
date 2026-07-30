@@ -146,8 +146,8 @@ function initAuth() {
 // So this reads the one document whose rule is exactly "is this person an
 // admin, and is it their own": adminProfile/{uid}. The read succeeding means
 // authorized; permission-denied means not. Both routes in the rules — the
-// email list and the `admins` collection — are covered automatically, because
-// the rule for this path already accepts either.
+// owner address in the rules and the `adminEmails` collection — are covered
+// automatically, because the rule for this path already accepts either.
 //
 // The document itself need not exist. Firestore permits reading a missing
 // document you would be allowed to read, so a brand-new admin is allowed
