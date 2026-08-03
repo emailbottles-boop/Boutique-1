@@ -390,8 +390,14 @@ img { max-width: 100%; display: block; }
 .grid--4 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 
 /* Belt and braces: even if a grid somewhere gives a card a full-width track,
-   a product card should never blow up past a sensible card size. */
-.product-card { max-width: 340px; }
+   a product card should never blow up past a sensible card size. Grid items
+   stretch to fill their column by default, so once max-width stops that
+   stretch, the card is narrower than its column with nothing telling it
+   where to sit — it renders flush against the start edge instead of
+   centering. margin-inline: auto centers it in that leftover space. This is
+   most visible on mobile, where the grid is a single column much wider than
+   340px, so the card was pinned to the left edge of the screen. */
+.product-card { max-width: 340px; margin-inline: auto; }
 
 /* Product card */
 .product-card {
