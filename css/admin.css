@@ -447,6 +447,19 @@
 }
 .admin-inquiry__status.is-handled { background: var(--color-cream-dark); color: var(--color-charcoal-soft); }
 
+/* Muted by default so it doesn't compete with Mark Handled for attention —
+   deleting is the less common action and the one that needs a second look
+   before it's pressed, not the one the eye lands on first. */
+.admin-inquiry__delete {
+  color: var(--color-charcoal-soft);
+  border-color: rgba(43, 37, 35, 0.18);
+}
+.admin-inquiry__delete:hover {
+  color: #fff;
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
 .admin-toast {
   position: fixed;
   bottom: 1.5rem;

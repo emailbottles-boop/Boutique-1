@@ -729,7 +729,28 @@ function renderInquiryRow(id, inquiry) {
     loadInquiries();
   });
 
-  right.append(statusBadge, document.createElement("br"), toggleBtn);
+  // Deletes for good — there's no undo, and no trash to recover it from,
+  // so this asks first the same way removing a product does.
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "btn btn--outline btn--small admin-inquiry__delete";
+  deleteBtn.style.marginTop = "0.5rem";
+  deleteBtn.textContent = "Delete";
+  deleteBtn.addEventListener("click", async () => {
+    const label = inquiry.name ? `the message from ${inquiry.name}` : "this message";
+    if (!confirm(`Delete ${label}? This can't be undone.`)) return;
+    deleteBtn.disabled = true;
+    try {
+      await deleteDoc(doc(db, "inquiries", id));
+      showToast("Deleted.");
+      loadInquiries();
+    } catch (err) {
+      console.error(err);
+      showToast("Couldn't delete that — try again.");
+      deleteBtn.disabled = false;
+    }
+  });
+
+  right.append(statusBadge, document.createElement("br"), toggleBtn, document.createElement("br"), deleteBtn);
   card.append(info, right);
   return card;
 }
