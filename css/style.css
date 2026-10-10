@@ -402,9 +402,9 @@ img { max-width: 100%; display: block; }
 /* Product card */
 .product-card {
   background: var(--color-white);
-  border-radius: var(--radius);
+  border-radius: 4px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
 }
@@ -460,9 +460,9 @@ img { max-width: 100%; display: block; }
 /* Info cards (hours/location/social) */
 .info-card {
   background: var(--color-white);
-  border-radius: var(--radius);
+  border-radius: 4px;
   padding: 2rem;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 
 .info-card h3 {
@@ -765,7 +765,7 @@ textarea:focus-visible {
 }
 .product-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px rgba(43, 37, 35, 0.14);
+  box-shadow: none;
 }
 .btn { transition: all 0.2s ease, transform 0.15s ease; }
 .btn:active { transform: scale(0.97); }
