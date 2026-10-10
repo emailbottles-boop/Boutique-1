@@ -11,7 +11,7 @@
   margin: 5rem auto;
   background: var(--color-white);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: none;
   padding: 2.5rem;
   text-align: center;
 }
@@ -69,7 +69,7 @@
 .admin-card {
   background: var(--color-white);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: none;
   padding: 1.5rem;
   margin-bottom: 1.25rem;
 }
@@ -100,14 +100,14 @@
   position: relative;
   background: var(--color-white);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: none;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   transition: box-shadow 0.2s ease;
 }
 .admin-preview-card.is-dirty {
-  box-shadow: 0 0 0 2px var(--color-gold), var(--shadow);
+  box-shadow: 0 0 0 2px var(--color-gold);
 }
 
 /* photo */
@@ -229,14 +229,14 @@
   font-size: 1.3rem;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 1px 5px rgba(43, 37, 35, 0.28);
+  box-shadow: none;
 }
 .admin-preview-delete:hover { background: #c0392b; color: #fff; }
 
 /* "add an item" tile, sitting in the grid like another card */
 .admin-add-card {
   min-height: 260px;
-  border: 2px dashed rgba(43, 37, 35, 0.25);
+  border: 1px dashed rgba(43, 37, 35, 0.25);
   border-radius: var(--radius);
   background: transparent;
   color: var(--color-charcoal-soft);
@@ -272,7 +272,7 @@
 .page-map {
   background: var(--color-white);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: none;
   padding: 1.5rem;
 }
 @media (min-width: 700px) { .page-map { padding: 2rem; } }
